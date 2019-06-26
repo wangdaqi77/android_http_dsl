@@ -45,7 +45,8 @@
         override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
 
         /**
-         * 拦截处理网络请求中的异常错误码，
+         * 拦截处理网络请求中的异常错误码
+         * 第一个参数是code，第二个参数是message
          * 返回true代表拦截处理
          * 返回false代表不处理，最终会交给底层处理，详情查看[HttpCommonObserver.onError]
          */
