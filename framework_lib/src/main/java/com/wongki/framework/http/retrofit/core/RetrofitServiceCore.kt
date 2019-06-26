@@ -40,7 +40,9 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
     }
 
     /**
-     * 拦截处理网络请求中的异常，返回false代表不处理，最终会交给底层处理[HttpCommonObserver.onError]，返回true代表处理
+     * 拦截处理网络请求中的异常错误码，
+     * 返回true代表拦截处理
+     * 返回false代表不处理，最终会交给底层处理，详情查看[HttpCommonObserver.onError]
      */
     abstract val onInterceptErrorCode: (Int, String?) -> Boolean
     override val mConnectTimeOut: Long = 15_000
@@ -226,7 +228,6 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
         //builder.cookieJar(cookieJar);
         okHttpBuilder.addCommonUrlParams(mCommonUrlRequestParams)
         okHttpBuilder.addCommonHeaders(mCommonRequestHeader)
-        okHttpBuilder.addCommonPostParams(mCommonPostRequestParams)
         okHttpBuilder.addInterceptor(HttpLoggingInterceptor(CommonLogInterceptor).setLevel(HttpLoggingInterceptor.Level.BODY))
 
         okHttpBuilder.connectTimeout(mConnectTimeOut, TimeUnit.MILLISECONDS)
@@ -341,15 +342,4 @@ private fun OkHttpClient.Builder.addCommonUrlParams(map: MutableMap<String, Stri
     }
 }
 
-
-private fun OkHttpClient.Builder.addCommonPostParams(map: MutableMap<String, String>) {
-    if (map.isEmpty()) return
-//    addInterceptor { chain ->
-//        val requestBuilder = chain.request().newBuilder()
-//        for (entry in map) {
-//            requestBuilder.addHeader(entry.key, entry.value)
-//        }
-//        return@addInterceptor chain.proceed(requestBuilder.build())
-//    }
-}
 

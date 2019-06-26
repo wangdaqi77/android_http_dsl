@@ -14,7 +14,6 @@ object OtherServiceCore : RetrofitServiceCore<OtherApi>() {
 
     override var mCommonRequestHeader: MutableMap<String, String> = mutableMapOf()
     override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
-    override var mCommonPostRequestParams: MutableMap<String, String> = mutableMapOf()
 
     override val onInterceptErrorCode: (Int, String?) -> Boolean = { _, _ -> false }
 }

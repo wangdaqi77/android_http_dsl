@@ -14,4 +14,5 @@ import io.reactivex.Observable
  */
 
 fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
+
 fun <R> Any.newOtherRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (OtherApi) -> Observable<CommonResponse<R>>) = OtherServiceCore.newRequester(lifecycleObserver, preRequest)

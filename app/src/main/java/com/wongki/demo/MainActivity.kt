@@ -4,6 +4,7 @@ import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import android.view.Menu
 import android.view.MenuItem
+import com.wongki.demo.http.MusicServiceCore
 import com.wongki.demo.http.newMusicRequester
 import com.wongki.framework.base.BaseHttpLifecycleActivity
 import com.wongki.framework.extensions.toast
@@ -31,12 +32,18 @@ class MainActivity : BaseHttpLifecycleActivity() {
                 return@setOnClickListener
             }
 
-
-            newMusicRequester(this) { api -> api.searchMusic(name = name) }
-                .onSuccess { list ->
-                    //show...
-                }
-                .request()
+//            MusicServiceCore
+//                .newRequester(this) { api -> api.searchMusic(name = name) }
+//                .onSuccess { list ->
+//                    //show...
+//                }
+//                .request()
+//
+//            newMusicRequester(this) { api -> api.searchMusic(name = name) }
+//                .onSuccess { list ->
+//                    //show...
+//                }
+//                .request()
 
 
 
