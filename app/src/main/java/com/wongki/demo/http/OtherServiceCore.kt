@@ -1,6 +1,7 @@
 package com.wongki.demo.http
 
 import com.wongki.demo.model.OtherApi
+import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 
 /**
@@ -15,5 +16,9 @@ object OtherServiceCore : RetrofitServiceCore<OtherApi>() {
     override var mCommonRequestHeader: MutableMap<String, String> = mutableMapOf()
     override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
 
-    override val onInterceptErrorCode: (Int, String?) -> Boolean = { _, _ -> false }
+    override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
+        override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
+            return false
+        }
+    }
 }

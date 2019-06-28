@@ -24,10 +24,4 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
      */
     override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
 
-    /**
-     * 拦截处理网络请求中的异常错误码，
-     * 返回true代表拦截处理
-     * 返回false代表不处理，最终会交给底层处理，详情查看[HttpCommonObserver.onError]
-     */
-    override val onInterceptErrorCode: (Int, String?) -> Boolean = { _, _ -> false }
 }

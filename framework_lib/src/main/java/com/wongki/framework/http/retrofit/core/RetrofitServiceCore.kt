@@ -7,6 +7,7 @@ import com.wongki.framework.http.base.IServiceCore
 import com.wongki.framework.http.lifecycle.HttpLifecycle
 import com.wongki.framework.http.lifecycle.IHttpLifecycleFactory
 import com.wongki.framework.http.lifecycle.IHttpLifecycleOwner
+import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
 import com.wongki.framework.http.retrofit.IRetrofit
 import com.wongki.framework.http.retrofit.converter.GsonConverterFactory
@@ -39,16 +40,11 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
         val DAFAULT_onFailed: (Int, String?) -> Boolean = { _, _ -> false }
     }
 
-    /**
-     * 拦截处理网络请求中的异常错误码，
-     * 返回true代表拦截处理
-     * 返回false代表不处理，最终会交给底层处理，详情查看[HttpCommonObserver.onError]
-     */
-    abstract val onInterceptErrorCode: (Int, String?) -> Boolean
     override val mConnectTimeOut: Long = 15_000
     override val mReadTimeOut: Long = 15_000
     override val mWriteTimeOut: Long = 15_000
     protected val mRetrofit by lazy { generateRetrofit() }
+    protected open var errorInterceptor: ErrorInterceptor? = null
 
     /**
      * 默认的服务对象
@@ -100,6 +96,11 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
         private lateinit var preRequest: (SERVICE) -> Observable<CommonResponse<RESPONSE_DATA>>
         private var onFailed: (Int, String?) -> Boolean = DAFAULT_onFailed
         /**
+         * 拦截处理错误码
+         * 优先级：[addErrorInterceptor] > [RetrofitServiceCore.errorInterceptor] > [HttpCommonObserver.onError]
+         */
+        private var errorInterceptor: ErrorInterceptor? = null
+        /**
          * 返回解析后完整的Response [CommonResponse]
          * 业务层同时设置[onSuccess]和[onFullSuccess]时，只会触发[onFullSuccess]
          */
@@ -109,7 +110,8 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
          */
         private var onSuccess: (RESPONSE_DATA?) -> Unit = { _ -> }
         private var rxLifecycleObserver: WeakReference<IHttpRetrofitLifecycleObserver?>? = null
-        private var composer: ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>>? = null
+        private var composer: ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>>? =
+            null
         private var mDisposable: WeakReference<Disposable?>? = null
         fun newRequester(
             rxLifecycleObserver: IHttpRetrofitLifecycleObserver?,
@@ -125,6 +127,12 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
 
         fun compose(composer: ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>>): RetrofitRequester<RESPONSE_DATA> {
             this.composer = composer
+            return this
+        }
+
+        fun addErrorInterceptor(errorInterceptor: ErrorInterceptor): RetrofitRequester<RESPONSE_DATA> {
+            errorInterceptor.next = this.errorInterceptor ?:this@RetrofitServiceCore.errorInterceptor
+            this.errorInterceptor = errorInterceptor
             return this
         }
 
@@ -162,7 +170,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
             realRequestOnLifecycle(
                 preRequest = preRequest,
                 composer = composer ?: applyRetrofitHttpDefaultSchedulers(),
-                onInterceptErrorCode = onInterceptErrorCode,
+                errorInterceptor = errorInterceptor,
                 onFailed = onFailed,
                 onSuccess = onFullSuccess,
                 onStart = { disposable ->
@@ -266,7 +274,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
     private fun <RESPONSE_DATA> realRequestOnLifecycle(
         preRequest: (SERVICE) -> Observable<CommonResponse<RESPONSE_DATA>>,
         composer: ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>>,
-        onInterceptErrorCode: (Int, String?) -> Boolean,
+        errorInterceptor: ErrorInterceptor? = null,
         onFailed: (Int, String?) -> Boolean,
         onSuccess: (CommonResponse<RESPONSE_DATA>) -> Unit,
         onStart: (Disposable) -> Unit,
@@ -274,7 +282,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
     ) {
         request(preRequest, composer)
             .subscribe(object :
-                HttpCommonObserver<CommonResponse<RESPONSE_DATA>>(onInterceptErrorCode, onFailed, onSuccess) {
+                HttpCommonObserver<CommonResponse<RESPONSE_DATA>>(errorInterceptor, onFailed, onSuccess) {
 
                 override fun onComplete() {
                     onComplete()

@@ -4,6 +4,7 @@ import com.wongki.framework.extensions.toast
 import com.wongki.framework.http.exception.ApiException
 import com.wongki.framework.http.HttpCode
 import com.wongki.framework.http.exception.ParseResponseException
+import com.wongki.framework.http.retrofit.ErrorInterceptor
 import io.reactivex.Observer
 import retrofit2.HttpException
 import java.io.IOException
@@ -19,7 +20,7 @@ import java.text.ParseException
  * desc:    .
  */
 abstract class HttpCommonObserver<R>(
-    val onInterceptErrorCode: (Int, String?) -> Boolean,
+    val errorInterceptor: ErrorInterceptor? = null,
     val onFailed: (Int, String?) -> Boolean,
     val onSuccess: (R) -> Unit
 ) : Observer<R> {
@@ -33,8 +34,13 @@ abstract class HttpCommonObserver<R>(
         val code: Int = wrapError.first
         val msg: String? = wrapError.second
 
-        // 上层是否拦截处理错误码？ 默认false，不处理
-        val isIntercept = onInterceptErrorCode(code, msg)
+        var isIntercept = false
+        var errorInterceptor = this.errorInterceptor
+        while (errorInterceptor != null && !isIntercept) {
+            isIntercept = errorInterceptor.onInterceptErrorCode(code, msg)
+            errorInterceptor = errorInterceptor.next
+        }
+
         if (!isIntercept) {
             when (code) {
                 // 升级
