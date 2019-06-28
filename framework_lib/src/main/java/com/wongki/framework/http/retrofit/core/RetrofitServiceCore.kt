@@ -171,7 +171,10 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
                 preRequest = preRequest,
                 composer = composer ?: applyRetrofitHttpDefaultSchedulers(),
                 errorInterceptor = errorInterceptor,
-                onFailed = onFailed,
+                onFailed = onFailed@{ code, message ->
+                    notifyRemoveRequester()
+                    return@onFailed onFailed(code, message)
+                },
                 onSuccess = onFullSuccess,
                 onStart = { disposable ->
                     this.mDisposable = WeakReference(disposable)
@@ -181,10 +184,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
                     }
                 },
                 onComplete = {
-                    // 完成remove请求
-                    rxLifecycleObserver?.get()?.let { tag ->
-                        getLifecycle().removeRequester(tag, this@RetrofitRequester)
-                    }
+                    notifyRemoveRequester()
                 }
             )
             return this
@@ -200,6 +200,15 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
                 getLifecycle().removeRequester(tag, this)
             }
 
+        }
+
+        /**
+         * 通知移除requester缓存
+         */
+        private fun notifyRemoveRequester(){
+            rxLifecycleObserver?.get()?.let { tag ->
+                getLifecycle().removeRequester(tag, this@RetrofitRequester)
+            }
         }
 
         private fun getDisposable() = mDisposable?.get()

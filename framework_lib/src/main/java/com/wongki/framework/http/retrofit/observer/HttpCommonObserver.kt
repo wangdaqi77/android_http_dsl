@@ -20,9 +20,9 @@ import java.text.ParseException
  * desc:    .
  */
 abstract class HttpCommonObserver<R>(
-    val errorInterceptor: ErrorInterceptor? = null,
-    val onFailed: (Int, String?) -> Boolean,
-    val onSuccess: (R) -> Unit
+    private val errorInterceptor: ErrorInterceptor? = null,
+    private val onFailed: (Int, String?) -> Boolean,
+    private val onSuccess: (R) -> Unit
 ) : Observer<R> {
 
     override fun onNext(t: R) {
@@ -34,6 +34,9 @@ abstract class HttpCommonObserver<R>(
         val code: Int = wrapError.first
         val msg: String? = wrapError.second
 
+        /**
+         * 上层是否已处理该错误码
+         */
         var isIntercept = false
         var errorInterceptor = this.errorInterceptor
         while (errorInterceptor != null && !isIntercept) {
