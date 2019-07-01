@@ -3,15 +3,9 @@ package com.wongki.framework.http.retrofit.core
 import android.util.Log
 import com.wongki.framework.model.domain.CommonResponse
 import com.wongki.framework.http.base.IRequester
-import com.wongki.framework.http.base.IServiceCore
-import com.wongki.framework.http.lifecycle.HttpLifecycle
-import com.wongki.framework.http.lifecycle.IHttpLifecycleFactory
-import com.wongki.framework.http.lifecycle.IHttpLifecycleOwner
 import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
-import com.wongki.framework.http.retrofit.IRetrofit
 import com.wongki.framework.http.retrofit.converter.GsonConverterFactory
-import com.wongki.framework.http.retrofit.lifecycle.HttpRetrofitLifecycleHelper
 import com.wongki.framework.http.retrofit.lifecycle.IHttpRetrofitLifecycleObserver
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
@@ -23,7 +17,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import java.lang.ref.WeakReference
-import java.lang.reflect.ParameterizedType
 import java.util.concurrent.TimeUnit
 
 
@@ -34,44 +27,10 @@ import java.util.concurrent.TimeUnit
  * desc:    retrofit网络请求框架核心类
  *
  */
-abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, IHttpLifecycleOwner/*, ISSL*/ {
+abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
 
     companion object {
         val DAFAULT_onFailed: (Int, String?) -> Boolean = { _, _ -> false }
-    }
-
-    override val mConnectTimeOut: Long = 15_000
-    override val mReadTimeOut: Long = 15_000
-    override val mWriteTimeOut: Long = 15_000
-    protected val mRetrofit by lazy { generateRetrofit() }
-    protected open var errorInterceptor: ErrorInterceptor? = null
-
-    /**
-     * 默认的服务对象
-     */
-    private val mDefaultService: SERVICE by lazy {
-        val paramType = this.javaClass.genericSuperclass as ParameterizedType
-        val serviceClazz = paramType.actualTypeArguments[0] as Class<SERVICE>
-        mRetrofit.create(serviceClazz)
-    }
-
-    /**
-     * 创建其他的服务对象
-     */
-    fun <T> createOther(serviceClazz: Class<T>): T {
-        return mRetrofit.create(serviceClazz)
-    }
-
-    /**
-     * 发起请求
-     * @param request 默认的服务对象中具体的api请求方法
-     * @param composer 线程调度
-     */
-    protected fun <RESPONSE_DATA> request(
-        request: (SERVICE) -> Observable<CommonResponse<RESPONSE_DATA>>,
-        composer: ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>>
-    ): Observable<CommonResponse<RESPONSE_DATA>> {
-        return request(mDefaultService).compose(composer)
     }
 
     /**
@@ -158,7 +117,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
         /**
          * 被观察者在io，观察者在主线程
          */
-        private fun applyRetrofitHttpDefaultSchedulers(): ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>> {
+        private fun applyDefaultSchedulers(): ObservableTransformer<CommonResponse<RESPONSE_DATA>, CommonResponse<RESPONSE_DATA>> {
             return ObservableTransformer { observable ->
                 observable.subscribeOn(Schedulers.io())
                     .unsubscribeOn(Schedulers.io())
@@ -169,7 +128,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
         override fun request(): RetrofitRequester<RESPONSE_DATA> {
             realRequestOnLifecycle(
                 preRequest = preRequest,
-                composer = composer ?: applyRetrofitHttpDefaultSchedulers(),
+                composer = composer ?: applyDefaultSchedulers(),
                 errorInterceptor = errorInterceptor,
                 onFailed = onFailed@{ code, message ->
                     notifyRemoveRequester()
@@ -215,19 +174,6 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
     }
 
     /**
-     * 创建网络请求生命周期管理器
-     */
-    private object HttpRetrofitLifecycleFactory : IHttpLifecycleFactory {
-
-        override fun createLifecycle(): HttpLifecycle {
-            val lifecycle = HttpLifecycle()
-            // 将生命周期管理器添加到缓存中
-            HttpRetrofitLifecycleHelper.addLifecycle(lifecycle)
-            return lifecycle
-        }
-    }
-
-    /**
      * Log拦截器
      */
     protected object CommonLogInterceptor : HttpLoggingInterceptor.Logger {
@@ -240,7 +186,7 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
     /**
      * 生成retrofit
      */
-    private fun generateRetrofit(): Retrofit {
+    override fun generateRetrofit(): Retrofit {
         val okHttpBuilder = OkHttpClient.Builder()
         //builder.cookieJar(cookieJar);
         okHttpBuilder.addCommonUrlParams(mCommonUrlRequestParams)
@@ -304,59 +250,4 @@ abstract class RetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, 
             })
     }
 
-    /**
-     * 生命周期管理器
-     */
-    private var mLifecycle: HttpLifecycle? = null
-
-
-    /**
-     * 获取生命周期管理器
-     */
-    final override fun getLifecycle(): HttpLifecycle {
-        if (mLifecycle == null) {
-            synchronized(RetrofitServiceCore::class.java) {
-                if (mLifecycle == null) {
-                    val lifecycle = HttpRetrofitLifecycleFactory.createLifecycle()
-                    mLifecycle = lifecycle
-                }
-            }
-        }
-
-        return mLifecycle!!
-    }
-
-
-//    /*****SSL相关******/
-//    override fun getSSLSocketFactory() = SSLFactory.DEFAULT.getSSLSocketFactory()
-//
-//    /*****SSL相关******/
-//    override fun getHostnameVerifier() = SSLFactory.DEFAULT.getHostnameVerifier()
 }
-
-
-private fun OkHttpClient.Builder.addCommonHeaders(map: MutableMap<String, String>) {
-    if (map.isEmpty()) return
-    addInterceptor { chain ->
-        val requestBuilder = chain.request().newBuilder()
-        for (entry in map) {
-            requestBuilder.addHeader(entry.key, entry.value)
-        }
-        return@addInterceptor chain.proceed(requestBuilder.build())
-    }
-}
-
-
-private fun OkHttpClient.Builder.addCommonUrlParams(map: MutableMap<String, String>) {
-    if (map.isEmpty()) return
-    addInterceptor { chain ->
-        val urlBuilder = chain.request().url().newBuilder()
-        for (entry in map) {
-            urlBuilder.addQueryParameter(entry.key, entry.value)
-        }
-        val requestBuilder = chain.request().newBuilder().url(urlBuilder.build())
-        return@addInterceptor chain.proceed(requestBuilder.build())
-    }
-}
-
-

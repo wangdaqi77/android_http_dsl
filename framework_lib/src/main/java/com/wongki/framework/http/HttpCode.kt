@@ -22,4 +22,8 @@ object HttpCode {
     const val TIMEOUT_FAILED = -104
     // 请求失败
     const val REQUEST_FAILED = -105
+    // 文件未找到
+    const val FILE_NOT_FOUND_FAILED = -106
+    // 写入文件失败
+    const val FILE_WRITE_FAILED = -107
 }

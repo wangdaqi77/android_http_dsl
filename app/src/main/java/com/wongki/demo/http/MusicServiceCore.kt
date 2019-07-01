@@ -1,8 +1,7 @@
 package com.wongki.demo.http
 
-import com.wongki.demo.model.MusicApi
+import com.wongki.demo.model.api.MusicApi
 import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
-import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
 
 /**
  * @author  wangqi

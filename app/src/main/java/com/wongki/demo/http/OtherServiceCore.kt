@@ -1,6 +1,6 @@
 package com.wongki.demo.http
 
-import com.wongki.demo.model.OtherApi
+import com.wongki.demo.model.api.OtherApi
 import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 

@@ -1,4 +1,4 @@
-package com.wongki.demo.model
+package com.wongki.demo.model.api
 
 
 

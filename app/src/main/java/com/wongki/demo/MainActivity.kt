@@ -1,16 +1,20 @@
 package com.wongki.demo
 
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.Menu
 import android.view.MenuItem
-import com.wongki.demo.http.MusicServiceCore
 import com.wongki.demo.http.newMusicRequester
 import com.wongki.framework.base.BaseHttpLifecycleActivity
 import com.wongki.framework.extensions.toast
+import com.wongki.demo.http.DownloaderService
+import com.wongki.demo.http.newDownloadRequester
+import com.wongki.demo.http.newOtherRequester
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.io.File
 
 class MainActivity : BaseHttpLifecycleActivity() {
 
@@ -46,7 +50,6 @@ class MainActivity : BaseHttpLifecycleActivity() {
 //                .request()
 
 
-
             newMusicRequester(this) { api -> api.searchMusic(name = name) }
                 .onSuccess { result ->
                     result?.let { list ->
@@ -65,6 +68,16 @@ class MainActivity : BaseHttpLifecycleActivity() {
                 }
                 .request()
 
+//            // 下载
+//            val file = File(cacheDir, "hh.apk")
+//            for (i in 0..15) {
+//                newDownloadRequester(lifecycleObserver = this, filePath = file.absolutePath) { api -> api.download("http://yqlapp.geruiter.com/yql_v1.0.4.apk") }
+//                    .onStart { Log.e("DownloaderService", "开始下载") }
+//                    .onProgress { progress -> Log.e("DownloaderService", "progress:$progress") }
+//                    .onSuccess { filePath -> Log.e("DownloaderService", "下载成功") }
+//                    .onFailed { code, message -> false }
+//                    .request()
+//            }
         }
     }
 
