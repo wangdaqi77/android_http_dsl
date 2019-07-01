@@ -45,12 +45,14 @@
         override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
 
         /**
-         * 拦截处理网络请求中的异常错误码
-         * 第一个参数是code，第二个参数是message
-         * 返回true代表拦截处理
-         * 返回false代表不处理，最终会交给底层处理，详情查看[HttpCommonObserver.onError]
+         * （可选）
+         * 拦截处理网络请求中的异常错误码,详情查看[HttpCommonObserver.onError]
          */
-        override val onInterceptErrorCode: (Int, String?) -> Boolean = { _, _ -> false }
+        override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
+            override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
+                return false
+            }
+        }
     }
 ### 3.拓展函数(可选)
     fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
