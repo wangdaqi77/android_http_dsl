@@ -16,7 +16,7 @@
     .request()
     
 或者
-    
+    // 需要手写拓展函数
     newMusicRequester(this) { api -> api.searchMusic(name = name) }
     .onSuccess { list ->
         //show...
