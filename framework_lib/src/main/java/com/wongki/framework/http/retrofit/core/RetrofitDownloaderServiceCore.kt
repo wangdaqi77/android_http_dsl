@@ -222,7 +222,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
             try {
                 fos = FileOutputStream(file)
 
-                val b = ByteArray(1024)
+                val b = ByteArray(1024 * 8)
 
                 var len: Int
                 while (inputString.read(b).apply { len = this } != -1) {
@@ -250,18 +250,16 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
             synchronized(mLock) {
                 val requester = this.requester
                 if (requester != null) {
-                    response = response.newBuilder()
-                        .body(
-                            DownloadResponseBody(
-                                response.body(),
-                                requester.getProgressListener()
-                            )
-                        )
-                        .build()
 
+                    if (response.isSuccessful) {
+                        response = response.newBuilder()
+                            .body(DownloadResponseBody(response.body(), requester.getProgressListener()))
+                            .build()
+                    }
                     this.requester = null
                     mLock.notify()
                 }
+
             }
 
             return response
@@ -274,6 +272,9 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         fun <SERVICE> syncRequest(retrofitRequester: RetrofitDownloaderServiceCore<SERVICE>.RetrofitDownloadRequester) {
             executor.execute {
                 synchronized(mLock) {
+                    if (requester != null) {
+                        mLock.wait()
+                    }
                     requester = retrofitRequester
                     mLock.wait()
                 }
@@ -352,7 +353,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
 
 
         // 错误重连
-        // builder.retryOnConnectionFailure(true)
+        okHttpBuilder.retryOnConnectionFailure(true)
 
 //        if (BuildConfig.DEBUG) {
 //            getSSLSocketFactory()?.let {

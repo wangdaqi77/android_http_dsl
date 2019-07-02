@@ -22,7 +22,7 @@ class MainActivity : BaseHttpLifecycleActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
+        cacheDir.listFiles().forEach(::println)
         init()
     }
 
@@ -68,14 +68,26 @@ class MainActivity : BaseHttpLifecycleActivity() {
                 }
                 .request()
 
+
+//            cacheDir.listFiles().forEach{file -> file.delete() }
 //            // 下载
-//            val file = File(cacheDir, "hh.apk")
-//            for (i in 0..15) {
-//                newDownloadRequester(lifecycleObserver = this, filePath = file.absolutePath) { api -> api.download("http://yqlapp.geruiter.com/yql_v1.0.4.apk") }
-//                    .onStart { Log.e("DownloaderService", "开始下载") }
+//            for (i in 0..20) {
+//                val file = File(cacheDir, "test_$i.apk")
+//                newDownloadRequester(
+//                    lifecycleObserver = this,
+//                    filePath = file.absolutePath
+//                ) { api -> api.download("http://a.gdown.baidu.com/data/wisegame/714f0c33d0145a5b/kanmanhua_1906272233.apk?from=a1101") }
+//                    .onStart {
+//                        Log.e("DownloaderService", "开始下载")
+//                    }
 //                    .onProgress { progress -> Log.e("DownloaderService", "progress:$progress") }
-//                    .onSuccess { filePath -> Log.e("DownloaderService", "下载成功") }
-//                    .onFailed { code, message -> false }
+//                    .onSuccess { filePath ->
+//                        Log.e("DownloaderService", "下载成功")
+//                    }
+//                    .onFailed { code, message ->
+//                        Log.e("DownloaderService", "下载失败")
+//                        false
+//                    }
 //                    .request()
 //            }
         }
