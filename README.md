@@ -7,6 +7,7 @@
 ### 4.良好的拓展性
 
 ## 例子
+### 1.请求数据
     MusicServiceCore
     .newRequester(this) { api -> api.searchMusic(name = name) }
     .onSuccess { list ->
@@ -21,6 +22,10 @@
         //show...
     }
     .request()
+    
+### 2.取消请求
+    val requester = MusicServiceCore.newRequester(this) { api -> api.searchMusic(name = name) }.request()
+    requester.cancel()
     
 ## 需要实现的类
 ### 1.Retrofit的Service接口
