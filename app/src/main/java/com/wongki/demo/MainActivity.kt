@@ -71,24 +71,29 @@ class MainActivity : BaseHttpLifecycleActivity() {
 
 //            cacheDir.listFiles().forEach{file -> file.delete() }
 //            // 下载
-//            for (i in 0..20) {
+//            for (i in 1..10) {
 //                val file = File(cacheDir, "test_$i.apk")
-//                newDownloadRequester(
-//                    lifecycleObserver = this,
-//                    filePath = file.absolutePath
-//                ) { api -> api.download("http://a.gdown.baidu.com/data/wisegame/714f0c33d0145a5b/kanmanhua_1906272233.apk?from=a1101") }
-//                    .onStart {
-//                        Log.e("DownloaderService", "开始下载")
-//                    }
-//                    .onProgress { progress -> Log.e("DownloaderService", "progress:$progress") }
-//                    .onSuccess { filePath ->
-//                        Log.e("DownloaderService", "下载成功")
-//                    }
-//                    .onFailed { code, message ->
-//                        Log.e("DownloaderService", "下载失败")
-//                        false
-//                    }
-//                    .request()
+//                Thread {
+//                    newDownloadRequester(
+//                        lifecycleObserver = this,
+//                        filePath = file.absolutePath
+//                    ) { api -> api.download("http://yqlapp.geruiter.com/yql_v1.0.4.apk") }
+//                        .onStart {
+//                            Log.e("DownloaderService", "开始下载 i->$i")
+//                        }
+//                        .onProgress { progress ->
+//                            // Log.e("DownloaderService", "progress:$progress i->$i")
+//                        }
+//                        .onSuccess { filePath ->
+//                            Log.e("DownloaderService", "下载成功 i->$i")
+//                        }
+//                        .onFailed { code, message ->
+//                            Log.e("DownloaderService", "下载失败 i->$i")
+//                            false
+//                        }
+//                        .onCancel { Log.e("DownloaderService", "下载取消 i->$i") }
+//                        .request()
+//                }.start()
 //            }
         }
     }

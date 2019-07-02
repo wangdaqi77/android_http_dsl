@@ -166,7 +166,6 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         }
 
         override fun request(): RetrofitDownloadRequester {
-            DownloadInterceptor.syncRequest(this)
             // 添加拦截器
             realRequestOnLifecycle(
                 preRequest = preRequest,
@@ -184,6 +183,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
                     rxLifecycleObserver?.get()?.let { tag ->
                         getLifecycle().addRequester(tag, this@RetrofitDownloadRequester)
                     }
+                    DownloadInterceptor.syncRequest(this)
                     onStart()
                 },
                 onComplete = {

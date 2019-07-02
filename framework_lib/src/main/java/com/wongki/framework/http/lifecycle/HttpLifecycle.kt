@@ -11,24 +11,19 @@ import java.lang.ref.WeakReference
  * desc:    .
  */
 class HttpLifecycle {
-    private val mCaches by lazy { HashMap<WeakReference<IHttpLifecycleObserver?>, ArrayList<WeakReference<IRequester?>>>() }
+    private val mCaches by lazy { HashMap<IHttpLifecycleObserver, ArrayList<IRequester>>() }
 
     /**
      * 根据tag查找requester
      */
-    private inline fun find(tag: IHttpLifecycleObserver, onFind: (MutableMap.MutableEntry<WeakReference<IHttpLifecycleObserver?>, java.util.ArrayList<WeakReference<IRequester?>>>) -> Unit) {
+    private inline fun find(tag: IHttpLifecycleObserver, onFind: (MutableMap.MutableEntry<IHttpLifecycleObserver, java.util.ArrayList<IRequester>>) -> Unit) {
         val iterator = mCaches.iterator()
         while (iterator.hasNext()) {
             val next = iterator.next()
-            val key = next.key
-            val cacheTag = key.get()
-            if (cacheTag == null) {
-                iterator.remove()
-            } else {
-                if (cacheTag == tag) {
-                    onFind(next)
-                    return
-                }
+            val cacheTag = next.key
+            if (cacheTag == tag) {
+                onFind(next)
+                return
             }
         }
     }
@@ -37,37 +32,36 @@ class HttpLifecycle {
     /**
      * 添加单个requester，requester绑定到tag
      */
+    @Synchronized
     fun addRequester(tag: IHttpLifecycleObserver, requester: IRequester) {
         find(tag) { cache ->
-            cache.value.add(WeakReference(requester))
+            cache.value.add(requester)
             return@addRequester
         }
 
-        val key = WeakReference(tag)
-        val value = ArrayList<WeakReference<IRequester?>>()
+        val key = tag
+        val value = ArrayList<IRequester>()
+        value.add(requester)
         mCaches[key] = value
     }
 
     /**
      * 取消request&&移除单个requester，requester取消绑定tag
      */
+    @Synchronized
     fun removeRequester(tag: IHttpLifecycleObserver, requester: IRequester) {
         find(tag) { cache ->
             val iterator = cache.value.iterator()
             while (iterator.hasNext()) {
                 val next = iterator.next()
-                val cacheRequest = next.get()
-                if (cacheRequest == null) {
-                    iterator.remove()
-                    break
-                } else {
-                    if (requester == cacheRequest) {
+                val cacheRequest = next
+
+                if (requester == cacheRequest) {
 //                        if (!requester.isCancel()) {
 //                            requester.cancel()
 //                        }
-                        iterator.remove()
-                        return@removeRequester
-                    }
+                    iterator.remove()
+                    return@removeRequester
                 }
 
             }
@@ -78,28 +72,24 @@ class HttpLifecycle {
     /**
      * 取消该tag下绑定的所有request
      */
+    @Synchronized
     fun cancelRequest(tag: IHttpLifecycleObserver) {
         val iterator = mCaches.iterator()
         while (iterator.hasNext()) {
             val next = iterator.next()
             val key = next.key
-            val cacheTag = key.get()
-            if (cacheTag == null) {
+            val cacheTag = key
+            if (cacheTag == tag) {
                 iterator.remove()
-            } else {
-                if (cacheTag == tag) {
-                    iterator.remove()
-                    val requestIterator = next.value.iterator()
-                    while (requestIterator.hasNext()) {
-                        val request = requestIterator.next().get()
-                        if (request != null) {
-                            request.cancel()
-                        }
-                        requestIterator.remove()
-                    }
-                    return
+                val requestIterator = next.value.iterator()
+                while (requestIterator.hasNext()) {
+                    val request = requestIterator.next()
+                    request.cancel()
+                    requestIterator.remove()
                 }
+                return
             }
+
         }
     }
 }
