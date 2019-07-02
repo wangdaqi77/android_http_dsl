@@ -10,9 +10,7 @@ import com.wongki.framework.http.retrofit.IRetrofit
 import com.wongki.framework.http.retrofit.lifecycle.HttpRetrofitLifecycleHelper
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.lang.reflect.ParameterizedType

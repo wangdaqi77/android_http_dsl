@@ -27,10 +27,12 @@ import java.util.concurrent.TimeUnit
  * desc:    retrofit网络请求框架核心类
  *
  */
-abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
+abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>() {
 
     companion object {
+        val DEFAULT_onStart: () -> Unit = {}
         val DAFAULT_onFailed: (Int, String?) -> Boolean = { _, _ -> false }
+        val DEFAULT_onCancel: () -> Unit = {}
     }
 
     /**
@@ -59,6 +61,17 @@ abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
          * 优先级：[addErrorInterceptor] > [RetrofitServiceCore.errorInterceptor] > [HttpCommonObserver.onError]
          */
         private var errorInterceptor: ErrorInterceptor? = null
+        /**
+         * 开始
+         */
+        private var onStart: () -> Unit =
+            DEFAULT_onStart
+        /**
+         * 取消
+         */
+        private var onCancel: () -> Unit =
+            DEFAULT_onCancel
+
         /**
          * 返回解析后完整的Response [CommonResponse]
          * 业务层同时设置[onSuccess]和[onFullSuccess]时，只会触发[onFullSuccess]
@@ -90,16 +103,13 @@ abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
         }
 
         fun addErrorInterceptor(errorInterceptor: ErrorInterceptor): RetrofitRequester<RESPONSE_DATA> {
-            errorInterceptor.next = this.errorInterceptor ?:this@RetrofitServiceCore.errorInterceptor
+            errorInterceptor.next = this.errorInterceptor ?: this@RetrofitServiceCore.errorInterceptor
             this.errorInterceptor = errorInterceptor
             return this
         }
 
-        /**
-         * @param onFailed 业务层返回true是代表业务层处理了该错误码，否则该错误码交给框架层处理
-         */
-        fun onFailed(onFailed: (Int, String?) -> Boolean): RetrofitRequester<RESPONSE_DATA> {
-            this.onFailed = onFailed
+        fun onStart(onStart: () -> Unit):  RetrofitRequester<RESPONSE_DATA> {
+            this.onStart = onStart
             return this
         }
 
@@ -111,6 +121,19 @@ abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
 
         fun onFullSuccess(onFullSuccess: (CommonResponse<RESPONSE_DATA>) -> Unit): RetrofitRequester<RESPONSE_DATA> {
             this.onFullSuccess = onFullSuccess
+            return this
+        }
+
+        /**
+         * @param onFailed 业务层返回true是代表业务层处理了该错误码，否则该错误码交给框架层处理
+         */
+        fun onFailed(onFailed: (Int, String?) -> Boolean): RetrofitRequester<RESPONSE_DATA> {
+            this.onFailed = onFailed
+            return this
+        }
+
+        fun onCancel(onCancel: () -> Unit):  RetrofitRequester<RESPONSE_DATA> {
+            this.onCancel = onCancel
             return this
         }
 
@@ -141,6 +164,7 @@ abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
                     rxLifecycleObserver?.get()?.let { tag ->
                         getLifecycle().addRequester(tag, this@RetrofitRequester)
                     }
+                    onStart()
                 },
                 onComplete = {
                     notifyRemoveRequester()
@@ -154,17 +178,19 @@ abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
         }
 
         override fun cancel() {
-            getDisposable()?.dispose()
-            rxLifecycleObserver?.get()?.let { tag ->
-                getLifecycle().removeRequester(tag, this)
+            if (isCancel()) {
+                getDisposable()?.dispose()
+                rxLifecycleObserver?.get()?.let { tag ->
+                    getLifecycle().removeRequester(tag, this)
+                }
+                onCancel()
             }
-
         }
 
         /**
          * 通知移除requester缓存
          */
-        private fun notifyRemoveRequester(){
+        private fun notifyRemoveRequester() {
             rxLifecycleObserver?.get()?.let { tag ->
                 getLifecycle().removeRequester(tag, this@RetrofitRequester)
             }
@@ -199,7 +225,7 @@ abstract class RetrofitServiceCore<SERVICE> :AbsRetrofitServiceCore<SERVICE>() {
 
 
         // 错误重连
-        // builder.retryOnConnectionFailure(true)
+        okHttpBuilder.retryOnConnectionFailure(true)
 
 //        if (BuildConfig.DEBUG) {
 //            getSSLSocketFactory()?.let {

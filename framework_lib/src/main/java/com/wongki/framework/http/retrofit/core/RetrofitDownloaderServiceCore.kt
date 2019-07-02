@@ -37,6 +37,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         val DEFAULT_onProgress: (Float) -> Unit = {}
         val DEFAULT_onSuccess: (String) -> Unit = {}
         val DEFAULT_onFailed: (Int, String?) -> Boolean = { _, _ -> false }
+        val DEFAULT_onCancel: () -> Unit = {}
     }
 
     override val mCommonRequestHeader: MutableMap<String, String> = mutableMapOf()
@@ -89,6 +90,13 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
          */
         private var onFailed: (Int, String?) -> Boolean =
             DEFAULT_onFailed
+
+        /**
+         * 取消
+         */
+        private var onCancel: () -> Unit =
+            DEFAULT_onCancel
+
         private var rxLifecycleObserver: WeakReference<IHttpRetrofitLifecycleObserver?>? = null
         private var mDisposable: WeakReference<Disposable?>? = null
         private lateinit var filePath: String
@@ -135,6 +143,12 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
             return this
         }
 
+
+        fun onCancel(onCancel: () -> Unit):  RetrofitDownloadRequester {
+            this.onCancel = onCancel
+            return this
+        }
+
         /**
          * 被观察者在io，观察者在主线程
          */
@@ -165,12 +179,12 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
                 },
                 onSuccess = { onSuccess(filePath) },
                 onStart = { disposable ->
-                    onStart()
                     this.mDisposable = WeakReference(disposable)
                     //添加请求
                     rxLifecycleObserver?.get()?.let { tag ->
                         getLifecycle().addRequester(tag, this@RetrofitDownloadRequester)
                     }
+                    onStart()
                 },
                 onComplete = {
                     notifyRemoveRequester()
@@ -184,11 +198,13 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         }
 
         override fun cancel() {
-            getDisposable()?.dispose()
-            rxLifecycleObserver?.get()?.let { tag ->
-                getLifecycle().removeRequester(tag, this)
+            if (isCancel()) {
+                getDisposable()?.dispose()
+                rxLifecycleObserver?.get()?.let { tag ->
+                    getLifecycle().removeRequester(tag, this)
+                }
+                onCancel()
             }
-
         }
 
         /**

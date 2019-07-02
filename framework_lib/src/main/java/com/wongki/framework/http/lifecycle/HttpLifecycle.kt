@@ -92,7 +92,7 @@ class HttpLifecycle {
                     val requestIterator = next.value.iterator()
                     while (requestIterator.hasNext()) {
                         val request = requestIterator.next().get()
-                        if (request != null && !request.isCancel()) {
+                        if (request != null) {
                             request.cancel()
                         }
                         requestIterator.remove()
