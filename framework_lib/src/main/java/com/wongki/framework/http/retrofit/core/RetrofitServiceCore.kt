@@ -1,12 +1,15 @@
 package com.wongki.framework.http.retrofit.core
 
 import android.util.Log
+import com.wongki.framework.BuildConfig
 import com.wongki.framework.model.domain.CommonResponse
 import com.wongki.framework.http.base.IRequester
 import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
 import com.wongki.framework.http.retrofit.converter.GsonConverterFactory
 import com.wongki.framework.http.retrofit.lifecycle.IHttpRetrofitLifecycleObserver
+import com.wongki.framework.http.ssl.ISSL
+import com.wongki.framework.http.ssl.SSLFactory
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -27,7 +30,7 @@ import java.util.concurrent.TimeUnit
  * desc:    retrofit网络请求框架核心类
  *
  */
-abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>() {
+abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),ISSL {
 
     companion object {
         val DEFAULT_onStart: () -> Unit = {}
@@ -209,6 +212,14 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>() 
         }
     }
 
+
+
+    /*****SSL相关******/
+    override fun getSSLSocketFactory() = SSLFactory.DEFAULT.getSSLSocketFactory()
+
+    /*****SSL相关******/
+    override fun getHostnameVerifier() = SSLFactory.DEFAULT.getHostnameVerifier()
+
     /**
      * 生成retrofit
      */
@@ -227,14 +238,14 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>() 
         // 错误重连
         okHttpBuilder.retryOnConnectionFailure(true)
 
-//        if (BuildConfig.DEBUG) {
-//            getSSLSocketFactory()?.let {
-//                okHttpBuilder.sslSocketFactory(it)
-//            }
-//            getHostnameVerifier()?.let {
-//                okHttpBuilder.hostnameVerifier(it)
-//            }
-//        }
+        if (BuildConfig.DEBUG) {
+            getSSLSocketFactory()?.let {
+                okHttpBuilder.sslSocketFactory(it)
+            }
+            getHostnameVerifier()?.let {
+                okHttpBuilder.hostnameVerifier(it)
+            }
+        }
 
         /*int[] certificates = {R.raw.myssl};//cer文件
         String hosts[] = {HConst.BASE_DEBUG_URL, HConst.BASE_PREVIEW_URL, HConst.BASE_RELEASE_URL, HConst.BASE_RELEASE_SHARE_URL};

@@ -8,6 +8,8 @@ import com.wongki.framework.http.lifecycle.IHttpLifecycleOwner
 import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.IRetrofit
 import com.wongki.framework.http.retrofit.lifecycle.HttpRetrofitLifecycleHelper
+import com.wongki.framework.http.ssl.ISSL
+import com.wongki.framework.http.ssl.SSLFactory
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import okhttp3.OkHttpClient
@@ -22,7 +24,7 @@ import java.lang.reflect.ParameterizedType
  * email:   wangqi7676@163.com
  *
  */
-abstract class AbsRetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, IHttpLifecycleOwner/*, ISSL*/ {
+abstract class AbsRetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE>, IHttpLifecycleOwner {
 
     override val mConnectTimeOut: Long = 15_000
     override val mReadTimeOut: Long = 15_000
@@ -110,13 +112,6 @@ abstract class AbsRetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE
 
         return mLifecycle!!
     }
-
-
-//    /*****SSL相关******/
-//    override fun getSSLSocketFactory() = SSLFactory.DEFAULT.getSSLSocketFactory()
-//
-//    /*****SSL相关******/
-//    override fun getHostnameVerifier() = SSLFactory.DEFAULT.getHostnameVerifier()
 
     protected fun OkHttpClient.Builder.addCommonHeaders(map: MutableMap<String, String>) {
         if (map.isEmpty()) return
