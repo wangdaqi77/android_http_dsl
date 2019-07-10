@@ -8,37 +8,37 @@
 
 ## 例子
 ### 1.请求数据
-···kotlin
+```kotlin
 MusicServiceCore
 .newRequester(this) { api -> api.searchMusic(name = name) }
 .onSuccess { list ->
     //show...
 }
 .request()
-···
+```
 或者
-···kotlin
+```kotlin
 newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写拓展函数
 .onSuccess { list ->
     //show...
 }
 .request()
-···
+```
 ### 2.取消请求
-···kotlin
+```kotlin
 val requester = MusicServiceCore.newRequester(this) { api -> api.searchMusic(name = name) }.request()
 requester.cancel()
-···
+```
 ## 需要实现的类
 ### 1.Retrofit的Service接口
-···kotlin
+```kotlin
 interface MusicApi {
     @GET("/searchMusic")
 fun searchMusic(@Query("name")name:String):Observable<CommonResponse<ArrayList<SearchMusic.Item>>>
 }
-···
+```
 ### 2.RetrofitServiceCore的实现类
-···kotlin
+```kotlin
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     override val mHost = "https://api.apiopen.top"
 
@@ -63,9 +63,9 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
         }
     }
 }
-···
+```
 ### 3.拓展函数(可选)
-···kotlin
+```kotlin
 fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
-···
+```
 
