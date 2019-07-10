@@ -34,7 +34,7 @@ requester.cancel()
 ```kotlin
 interface MusicApi {
     @GET("/searchMusic")
-fun searchMusic(@Query("name")name:String):Observable<CommonResponse<ArrayList<SearchMusic.Item>>>
+    fun searchMusic(@Query("name")name:String):Observable<CommonResponse<ArrayList<SearchMusic.Item>>>
 }
 ```
 ### 2.RetrofitServiceCore的实现类
