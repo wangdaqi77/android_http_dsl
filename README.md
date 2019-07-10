@@ -8,57 +8,64 @@
 
 ## 例子
 ### 1.请求数据
-    MusicServiceCore
-    .newRequester(this) { api -> api.searchMusic(name = name) }
-    .onSuccess { list ->
-        //show...
-    }
-    .request()
-    
+···kotlin
+MusicServiceCore
+.newRequester(this) { api -> api.searchMusic(name = name) }
+.onSuccess { list ->
+    //show...
+}
+.request()
+···
 或者
-    
-    newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写拓展函数
-    .onSuccess { list ->
-        //show...
-    }
-    .request()
-    
+···kotlin
+newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写拓展函数
+.onSuccess { list ->
+    //show...
+}
+.request()
+···
 ### 2.取消请求
-    val requester = MusicServiceCore.newRequester(this) { api -> api.searchMusic(name = name) }.request()
-    requester.cancel()
-    
+···kotlin
+val requester = MusicServiceCore.newRequester(this) { api -> api.searchMusic(name = name) }.request()
+requester.cancel()
+···
 ## 需要实现的类
 ### 1.Retrofit的Service接口
-    interface MusicApi {
-        @GET("/searchMusic")
-        fun searchMusic(@Query("name")name:String):Observable<CommonResponse<ArrayList<SearchMusic.Item>>>
-    }
-    
+···kotlin
+interface MusicApi {
+    @GET("/searchMusic")
+fun searchMusic(@Query("name")name:String):Observable<CommonResponse<ArrayList<SearchMusic.Item>>>
+}
+···
 ### 2.RetrofitServiceCore的实现类
-    object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
-        override val mHost = "https://api.apiopen.top"
+···kotlin
+object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
+    override val mHost = "https://api.apiopen.top"
 
-        /**
-         * 公共请求头
-         */
-        override var mCommonRequestHeader: MutableMap<String, String> = mutableMapOf()
+    /**
+     * 公共请求头
+     */
+    override var mCommonRequestHeader: MutableMap<String, String> = mutableMapOf()
 
-        /**
-         * 公共Url参数
-         * ex: &sex=1&age=18
-         */
-        override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
+    /**
+     * 公共Url参数
+     * ex: &sex=1&age=18
+     */
+    override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
 
-        /**
-         * （可选）
-         * 拦截处理网络请求中的异常错误码,详情查看[HttpCommonObserver.onError]
-         */
-        override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
-            override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
-                return false
-            }
+    /**
+     * （可选）
+     * 拦截处理网络请求中的异常错误码,详情查看[HttpCommonObserver.onError]
+     */
+    override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
+        override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
+            return false
         }
     }
+}
+···
 ### 3.拓展函数(可选)
-    fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
+···kotlin
+fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
+···
 
