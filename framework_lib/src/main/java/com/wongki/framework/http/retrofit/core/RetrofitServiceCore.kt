@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
  * desc:    retrofit网络请求框架核心类
  *
  */
-abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),ISSL {
+abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(), ISSL {
 
     companion object {
         val DEFAULT_onStart: () -> Unit = {}
@@ -79,7 +79,13 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
          * 返回解析后完整的Response [CommonResponse]
          * 业务层同时设置[onSuccess]和[onFullSuccess]时，只会触发[onFullSuccess]
          */
-        private var onFullSuccess: (CommonResponse<RESPONSE_DATA>) -> Unit = { result -> onSuccess(result.result) }
+        private var onFullSuccess: (CommonResponse<RESPONSE_DATA>) -> Unit = { result ->
+            if (result.result is String) {
+                onSuccess(null)
+            } else {
+                onSuccess(result.result)
+            }
+        }
         /**
          * 返回data [CommonResponse.result]
          */
@@ -111,7 +117,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
             return this
         }
 
-        fun onStart(onStart: () -> Unit):  RetrofitRequester<RESPONSE_DATA> {
+        fun onStart(onStart: () -> Unit): RetrofitRequester<RESPONSE_DATA> {
             this.onStart = onStart
             return this
         }
@@ -135,7 +141,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
             return this
         }
 
-        fun onCancel(onCancel: () -> Unit):  RetrofitRequester<RESPONSE_DATA> {
+        fun onCancel(onCancel: () -> Unit): RetrofitRequester<RESPONSE_DATA> {
             this.onCancel = onCancel
             return this
         }
@@ -211,7 +217,6 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
             Log.i(javaClass.simpleName, message)
         }
     }
-
 
 
     /*****SSL相关******/
