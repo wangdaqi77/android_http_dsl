@@ -113,11 +113,11 @@ abstract class AbsRetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE
         return mLifecycle!!
     }
 
-    protected fun OkHttpClient.Builder.addCommonHeaders(map: MutableMap<String, String>) {
-        if (map.isEmpty()) return
-        addInterceptor { chain ->
+
+    protected fun addCommonHeaders(okHttp: OkHttpClient.Builder) {
+        okHttp.addInterceptor { chain ->
             val requestBuilder = chain.request().newBuilder()
-            for (entry in map) {
+            for (entry in getCommonRequestHeader()) {
                 requestBuilder.addHeader(entry.key, entry.value)
             }
             return@addInterceptor chain.proceed(requestBuilder.build())
@@ -125,18 +125,16 @@ abstract class AbsRetrofitServiceCore<SERVICE> : IServiceCore, IRetrofit<SERVICE
     }
 
 
-    protected fun OkHttpClient.Builder.addCommonUrlParams(map: MutableMap<String, String>) {
-        if (map.isEmpty()) return
-        addInterceptor { chain ->
+    protected fun addCommonUrlParams(okHttp: OkHttpClient.Builder) {
+        okHttp.addInterceptor { chain ->
             val urlBuilder = chain.request().url().newBuilder()
-            for (entry in map) {
+            for (entry in getCommonUrlRequestParams()) {
                 urlBuilder.addQueryParameter(entry.key, entry.value)
             }
             val requestBuilder = chain.request().newBuilder().url(urlBuilder.build())
             return@addInterceptor chain.proceed(requestBuilder.build())
         }
     }
-
 }
 
 

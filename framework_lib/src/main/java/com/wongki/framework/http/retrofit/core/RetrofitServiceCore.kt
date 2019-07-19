@@ -231,8 +231,8 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
     override fun generateRetrofit(): Retrofit {
         val okHttpBuilder = OkHttpClient.Builder()
         //builder.cookieJar(cookieJar);
-        okHttpBuilder.addCommonUrlParams(mCommonUrlRequestParams)
-        okHttpBuilder.addCommonHeaders(mCommonRequestHeader)
+        addCommonUrlParams(okHttpBuilder)
+        addCommonHeaders(okHttpBuilder)
         okHttpBuilder.addInterceptor(HttpLoggingInterceptor(CommonLogInterceptor).setLevel(HttpLoggingInterceptor.Level.BODY))
 
         okHttpBuilder.connectTimeout(mConnectTimeOut, TimeUnit.MILLISECONDS)

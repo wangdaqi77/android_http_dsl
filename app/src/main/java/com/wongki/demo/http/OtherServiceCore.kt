@@ -13,8 +13,8 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 object OtherServiceCore : RetrofitServiceCore<OtherApi>() {
     override val mHost = ""
 
-    override var mCommonRequestHeader: MutableMap<String, String> = mutableMapOf()
-    override var mCommonUrlRequestParams: MutableMap<String, String> = mutableMapOf()
+    override fun getCommonRequestHeader(): MutableMap<String, String> = mutableMapOf()
+    override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
 
     override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
         override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
