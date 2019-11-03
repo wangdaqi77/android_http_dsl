@@ -23,19 +23,27 @@ musicService {
     requestServer<ArrayList<SearchMusic.Item>> {
 
         lifecycleObserver { this@MainActivity }
-        api { searchMusic(name = name) }
+
+        api {
+            searchMusic(name = name)
+        }
+
         observer {
-            onSuccess {handleSuccess(view,this)}
+            // 成功
+            onSuccess {
+                handleSuccess(view,this)
+            }
+
             onFailed { code, message ->
                 message.toast()
                 true
             }
+            
         }
 
     }
 
 }
-
 ```
 或者
 ```kotlin
