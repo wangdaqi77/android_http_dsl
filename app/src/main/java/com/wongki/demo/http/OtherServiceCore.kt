@@ -1,7 +1,6 @@
 package com.wongki.demo.http
 
 import com.wongki.demo.model.api.OtherApi
-import com.wongki.framework.http.retrofit.ErrorInterceptor
 import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 
 /**
@@ -16,9 +15,4 @@ object OtherServiceCore : RetrofitServiceCore<OtherApi>() {
     override fun getCommonRequestHeader(): MutableMap<String, String> = mutableMapOf()
     override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
 
-    override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
-        override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
-            return false
-        }
-    }
 }

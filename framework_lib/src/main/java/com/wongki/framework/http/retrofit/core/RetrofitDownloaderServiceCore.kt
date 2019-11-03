@@ -3,15 +3,16 @@ package com.wongki.framework.http.retrofit.core
 import android.util.Log
 import com.wongki.framework.http.HttpCode
 import com.wongki.framework.http.base.IRequester
-import com.wongki.framework.http.retrofit.ErrorInterceptor
-import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
+import com.wongki.framework.http.interceptor.ErrorInterceptorNode
 import com.wongki.framework.http.retrofit.converter.GsonConverterFactory
 import com.wongki.framework.http.retrofit.lifecycle.IHttpRetrofitLifecycleObserver
+import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import com.wongki.framework.utils.safeClose
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.*
@@ -30,15 +31,7 @@ import java.util.concurrent.TimeUnit
  * desc:    retrofit下载器
  *
  */
-abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>() {
-
-    companion object {
-        val DEFAULT_onStart: () -> Unit = {}
-        val DEFAULT_onProgress: (Float) -> Unit = {}
-        val DEFAULT_onSuccess: (String) -> Unit = {}
-        val DEFAULT_onFailed: (Int, String?) -> Boolean = { _, _ -> false }
-        val DEFAULT_onCancel: () -> Unit = {}
-    }
+abstract class RetrofitDownloaderServiceCore<API> : AbsRetrofitServiceCore<API>() {
 
     override fun getCommonRequestHeader(): MutableMap<String, String> = mutableMapOf()
     override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
@@ -52,7 +45,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
     fun newRequester(
         rxLifecycleObserver: IHttpRetrofitLifecycleObserver? = null,
         filePath: String,
-        preRequest: (SERVICE) -> Observable<ResponseBody>
+        preRequest: API.() -> Observable<ResponseBody>
     ): RetrofitDownloadRequester {
         val retrofitRequester = RetrofitDownloadRequester()
         retrofitRequester.newRequester(rxLifecycleObserver, filePath, preRequest)
@@ -64,38 +57,36 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
      * 每次请求都会构建一个retrofit请求器
      */
     open inner class RetrofitDownloadRequester : IRequester {
-        private lateinit var preRequest: (SERVICE) -> Observable<ResponseBody>
+        private lateinit var preRequest: API.() -> Observable<ResponseBody>
         /**
          * 拦截处理错误码
-         * 优先级：[addErrorInterceptor] > [RetrofitDownloaderServiceCore.errorInterceptor] > [HttpCommonObserver.onError]
+         * 优先级：[addErrorInterceptor] > [RetrofitDownloaderServiceCore.selfServiceApiErrorInterceptor] > [Glo.onError]
          */
-        private var errorInterceptor: ErrorInterceptor? = null
+        private var errorInterceptorLinked: ErrorInterceptorNode? = null
         /**
-         * 下载进度
+         * 开始
          */
-        private var onStart: () -> Unit =
-            DEFAULT_onStart
-        /**
-         * 下载进度
-         */
-        private var onProgress: (Float) -> Unit =
-            DEFAULT_onProgress
-        /**
-         * 下载成功
-         */
-        private var onSuccess: (String) -> Unit =
-            DEFAULT_onSuccess
-        /**
-         * 下载失败
-         */
-        private var onFailed: (Int, String?) -> Boolean =
-            DEFAULT_onFailed
+        private var onStart: (() -> Unit)? = null
 
         /**
          * 取消
          */
-        private var onCancel: () -> Unit =
-            DEFAULT_onCancel
+        private var onCancel: (() -> Unit)? = null
+
+        /**
+         * 下载进度
+         */
+        private var onProgress: ((Float) -> Unit)? = null
+
+        /**
+         * 下载成功
+         */
+        private var onSuccess: ((String) -> Unit)? = null
+
+        /**
+         * 下载失败
+         */
+        private var onFailed: ((Int, String) -> Boolean)? = null
 
         private var rxLifecycleObserver: WeakReference<IHttpRetrofitLifecycleObserver?>? = null
         private var mDisposable: WeakReference<Disposable?>? = null
@@ -103,7 +94,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         fun newRequester(
             rxLifecycleObserver: IHttpRetrofitLifecycleObserver?,
             filePath: String,
-            request: (SERVICE) -> Observable<ResponseBody>
+            request: (API) -> Observable<ResponseBody>
         ): RetrofitDownloadRequester {
             rxLifecycleObserver?.let { observer ->
                 this.rxLifecycleObserver = WeakReference(observer)
@@ -113,9 +104,10 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
             return this
         }
 
-        fun addErrorInterceptor(errorInterceptor: ErrorInterceptor): RetrofitDownloadRequester {
-            errorInterceptor.next = this.errorInterceptor ?: this@RetrofitDownloaderServiceCore.errorInterceptor
-            this.errorInterceptor = errorInterceptor
+        fun addErrorInterceptor(errorInterceptorNode: ErrorInterceptorNode): RetrofitDownloadRequester {
+            errorInterceptorNode.next = this.errorInterceptorLinked
+                ?: this@RetrofitDownloaderServiceCore.selfServiceApiErrorInterceptor
+            this.errorInterceptorLinked = errorInterceptorNode
             return this
         }
 
@@ -135,17 +127,16 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
             return this
         }
 
-        /**
-         * @param onFailed 业务层返回true是代表业务层处理了该错误码，否则该错误码交给框架层处理
-         */
-        fun onFailed(onFailed: (Int, String?) -> Boolean): RetrofitDownloadRequester {
-            this.onFailed = onFailed
+        fun onCancel(onCancel: () -> Unit): RetrofitDownloadRequester {
+            this.onCancel = onCancel
             return this
         }
 
-
-        fun onCancel(onCancel: () -> Unit):  RetrofitDownloadRequester {
-            this.onCancel = onCancel
+        /**
+         * @param onFailed 业务层返回true是代表业务层处理了该错误码，否则该错误码交给框架层处理
+         */
+        fun onFailed(onFailed: (Int, String) -> Boolean): RetrofitDownloadRequester {
+            this.onFailed = onFailed
             return this
         }
 
@@ -170,13 +161,8 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
             realRequestOnLifecycle(
                 preRequest = preRequest,
                 composer = applyDefaultSchedulers(filePath),
-                errorInterceptor = errorInterceptor,
-                onFailed = onFailed@{ code, message ->
-                    onFailed(code, message)
-                    notifyRemoveRequester()
-                    return@onFailed onFailed(code, message)
-                },
-                onSuccess = { onSuccess(filePath) },
+                errorInterceptor = errorInterceptorLinked
+                    ?: this@RetrofitDownloaderServiceCore.selfServiceApiErrorInterceptor,
                 onStart = { disposable ->
                     this.mDisposable = WeakReference(disposable)
                     //添加请求
@@ -184,10 +170,17 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
                         getLifecycle().addRequester(tag, this@RetrofitDownloadRequester)
                     }
                     DownloadInterceptor.syncRequest(this)
-                    onStart()
+                    onStart?.invoke()
                 },
+                onSuccess = { onSuccess?.invoke(filePath) },
+
                 onComplete = {
                     notifyRemoveRequester()
+                },
+                onFailed = onFailed@{ code, message ->
+                    onFailed?.invoke(code, message)
+                    notifyRemoveRequester()
+                    return@onFailed onFailed?.invoke(code, message) ?: false
                 }
             )
             return this
@@ -198,12 +191,12 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         }
 
         override fun cancel() {
-            if (isCancel()) {
+            if (!isCancel()) {
                 getDisposable()?.dispose()
                 rxLifecycleObserver?.get()?.let { tag ->
                     getLifecycle().removeRequester(tag, this)
                 }
-                onCancel()
+                onCancel?.invoke()
             }
         }
 
@@ -240,17 +233,18 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
 
                 val b = ByteArray(1024 * 8)
 
-                var len: Int
+                var len = 0
                 while (inputString.read(b).apply { len = this } != -1) {
                     fos.write(b, 0, len)
                 }
-                inputString.close()
-                fos.close()
 
             } catch (e: FileNotFoundException) {
-                onFailed(HttpCode.FILE_NOT_FOUND_FAILED, e.message)
+                onFailed?.invoke(HttpCode.FILE_NOT_FOUND_FAILED, e.message ?: "")
             } catch (e: IOException) {
-                onFailed(HttpCode.FILE_WRITE_FAILED, e.message)
+                onFailed?.invoke(HttpCode.FILE_WRITE_FAILED, e.message ?: "")
+            } finally {
+                fos.safeClose()
+                inputString.safeClose()
             }
 
         }
@@ -269,7 +263,12 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
 
                     if (response.isSuccessful) {
                         response = response.newBuilder()
-                            .body(DownloadResponseBody(response.body(), requester.getProgressListener()))
+                            .body(
+                                DownloadResponseBody(
+                                    response.body(),
+                                    requester.getProgressListener()
+                                )
+                            )
                             .build()
                     }
                     this.requester = null
@@ -299,7 +298,10 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
 
     }
 
-    class DownloadResponseBody(private val responseBody: ResponseBody?, private val onProgress: (Float) -> Unit) :
+    class DownloadResponseBody(
+        private val responseBody: ResponseBody?,
+        private val onProgress: ((Float) -> Unit)?
+    ) :
         ResponseBody() {
 
         // BufferedSource 是okio库中的输入流，这里就当作inputStream来使用。
@@ -332,7 +334,7 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
                         }
                     val progress = totalBytesRead * 100F / contentLength()
                     if (bytesRead != -1L) {
-                        onProgress(progress)
+                        onProgress?.invoke(progress)
                     }
                     return bytesRead
                 }
@@ -360,7 +362,11 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
         //builder.cookieJar(cookieJar);
         addCommonUrlParams(okHttpBuilder)
         addCommonHeaders(okHttpBuilder)
-        okHttpBuilder.addInterceptor(HttpLoggingInterceptor(CommonLogInterceptor).setLevel(HttpLoggingInterceptor.Level.BODY))
+        okHttpBuilder.addInterceptor(
+            HttpLoggingInterceptor(CommonLogInterceptor).setLevel(
+                HttpLoggingInterceptor.Level.BODY
+            )
+        )
         okHttpBuilder.addInterceptor(DownloadInterceptor)
 
         okHttpBuilder.connectTimeout(mConnectTimeOut, TimeUnit.MILLISECONDS)
@@ -402,10 +408,10 @@ abstract class RetrofitDownloaderServiceCore<SERVICE> : AbsRetrofitServiceCore<S
      * 发送网络请求
      */
     private fun realRequestOnLifecycle(
-        preRequest: (SERVICE) -> Observable<ResponseBody>,
+        preRequest: API.() -> Observable<ResponseBody>,
         composer: ObservableTransformer<ResponseBody, InputStream>,
-        errorInterceptor: ErrorInterceptor? = null,
-        onFailed: (Int, String?) -> Boolean,
+        errorInterceptor: ErrorInterceptorNode? = null,
+        onFailed: (Int, String) -> Boolean,
         onSuccess: (InputStream) -> Unit,
         onStart: (Disposable) -> Unit,
         onComplete: () -> Unit

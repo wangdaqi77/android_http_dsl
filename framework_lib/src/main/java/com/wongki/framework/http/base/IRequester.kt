@@ -18,7 +18,7 @@ interface IRequester {
     fun isCancel(): Boolean
 
     /**
-     * 取消网络请求
+     * 主动触发取消！
      */
     fun cancel()
 }

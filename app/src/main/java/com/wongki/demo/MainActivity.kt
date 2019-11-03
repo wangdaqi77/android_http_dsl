@@ -1,20 +1,17 @@
 package com.wongki.demo
 
 import android.os.Bundle
-import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.Menu
 import android.view.MenuItem
-import com.wongki.demo.http.newMusicRequester
+import android.view.View
+import com.wongki.demo.http.*
+import com.wongki.demo.model.bean.SearchMusic
 import com.wongki.framework.base.BaseHttpLifecycleActivity
 import com.wongki.framework.extensions.toast
-import com.wongki.demo.http.DownloaderService
-import com.wongki.demo.http.newDownloadRequester
-import com.wongki.demo.http.newOtherRequester
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import java.io.File
 
 class MainActivity : BaseHttpLifecycleActivity() {
 
@@ -50,20 +47,39 @@ class MainActivity : BaseHttpLifecycleActivity() {
 //                .request()
 
 
-            newMusicRequester(this) { api -> api.searchMusic(name = name) }
-                .onSuccess { result ->
-                    result?.let { list ->
-                        if (list.isNotEmpty()) {
-                            val item = list.first()
-                            Snackbar.make(view, "《${item.title}》 - ${item.author}", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show()
+            musicService {
+
+                requestServer<ArrayList<SearchMusic.Item>> {
+
+                    lifecycleObserver { this@MainActivity }
+
+                    api {
+                        searchMusic(name = name)
+                    }
+
+                    observer {
+                        // 成功
+                        onSuccess {
+                            handleSuccess(view,this)
                         }
 
+                        onFailed { code, message ->
+                            message.toast()
+                            true
+                        }
                     }
 
                 }
+
+            }
+
+
+            newMusicRequester(this) { api -> api.searchMusic(name = name) }
+                .onSuccess {
+                    handleSuccess(view,this)
+                }
                 .onFailed { code, message ->
-                    message?.toast()
+                    message.toast()
                     true
                 }
                 .request()
@@ -95,6 +111,20 @@ class MainActivity : BaseHttpLifecycleActivity() {
 //                        .request()
 //                }.start()
 //            }
+        }
+    }
+
+    private fun handleSuccess(
+        view: View,
+        arrayList: ArrayList<SearchMusic.Item>?
+    ) {
+        arrayList?.let { list ->
+            if (list.isNotEmpty()) {
+                val item = list.first()
+                Snackbar.make(view, "《${item.title}》 - ${item.author}", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            }
+
         }
     }
 

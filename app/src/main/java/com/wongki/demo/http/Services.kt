@@ -3,6 +3,7 @@ package com.wongki.demo.http
 import com.wongki.demo.model.api.DownloadApi
 import com.wongki.demo.model.api.MusicApi
 import com.wongki.demo.model.api.OtherApi
+import com.wongki.framework.http.retrofit.core.RetrofitServiceDslMarker
 import com.wongki.framework.http.retrofit.lifecycle.IHttpRetrofitLifecycleObserver
 import com.wongki.framework.model.domain.CommonResponse
 import io.reactivex.Observable
@@ -14,6 +15,12 @@ import okhttp3.ResponseBody
  * email:   wangqi7676@163.com
  * desc:    .
  */
+
+
+@RetrofitServiceDslMarker
+fun musicService(action:MusicServiceCore.()->Unit){
+    MusicServiceCore.action()
+}
 
 fun <R> Any.newMusicRequester(
     lifecycleObserver: IHttpRetrofitLifecycleObserver? = null,

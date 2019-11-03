@@ -1,7 +1,6 @@
 package com.wongki.framework.http.lifecycle
 
 import com.wongki.framework.http.base.IRequester
-import java.lang.ref.WeakReference
 
 /**
  * http生命周期管理接口
