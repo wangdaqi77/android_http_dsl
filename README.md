@@ -16,6 +16,27 @@ MusicServiceCore
 }
 .request()
 ```
+或者（dsl风格）
+```kotlin
+musicService {
+
+    requestServer<ArrayList<SearchMusic.Item>> {
+
+        lifecycleObserver { this@MainActivity }
+        api { searchMusic(name = name) }
+        observer {
+            onSuccess {handleSuccess(view,this)}
+            onFailed { code, message ->
+                message.toast()
+                true
+            }
+        }
+
+    }
+
+}
+
+```
 或者
 ```kotlin
 newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写拓展函数
@@ -24,6 +45,7 @@ newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写�
 }
 .request()
 ```
+
 ### 2.取消请求
 ```kotlin
 val requester = MusicServiceCore.newRequester(this) { api -> api.searchMusic(name = name) }.request()
@@ -52,20 +74,16 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
      * ex: &sex=1&age=18
      */
     override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
-
-    /**
-     * （可选）
-     * 拦截处理网络请求中的异常错误码,详情查看[HttpCommonObserver.onError]
-     */
-    override var errorInterceptor: ErrorInterceptor? = object : ErrorInterceptor() {
-        override fun onInterceptErrorCode(code: Int, message: String?): Boolean {
-            return false
-        }
-    }
 }
 ```
 ### 3.拓展函数(可选)
 ```kotlin
+
+@RetrofitServiceDslMarker
+fun musicService(action:MusicServiceCore.()->Unit){
+    MusicServiceCore.action()
+}
+
 fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
 ```
 
