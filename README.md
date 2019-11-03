@@ -1,4 +1,4 @@
-# 一个阅读性良好的网络框架（必须使用kotlin）
+# 一个阅读性良好的网络框架（kotlin）
 
 ## 优势
 ### 1.良好的阅读性
@@ -29,16 +29,10 @@ musicService {
         }
 
         observer {
-            // 成功
             onSuccess {
-                handleSuccess(view,this)
+                // show...
             }
 
-            onFailed { code, message ->
-                message.toast()
-                true
-            }
-            
         }
 
     }
@@ -48,7 +42,7 @@ musicService {
 或者
 ```kotlin
 newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写拓展函数
-.onSuccess { list ->
+.onSuccess {
     //show...
 }
 .request()
