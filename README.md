@@ -7,52 +7,30 @@
 ### 4.良好的拓展性
 
 ## 例子
-### 1.请求数据
-```kotlin
-MusicServiceCore
-.newRequester(this) { api -> api.searchMusic(name = name) }
-.onSuccess { list ->
-    //show...
-}
-.request()
-```
-或者（dsl风格）
+### 请求数据
 ```kotlin
 musicService {
 
-    requestServer<ArrayList<SearchMusic.Item>> {
+    MusicServiceCore.api<ArrayList<SearchMusic.Item>> {
 
         lifecycleObserver { this@MainActivity }
 
-        api {
+        call {
             searchMusic(name = name)
         }
 
         observer {
+            // 成功
             onSuccess {
-                // show...
+                handleSuccess(view, this)
             }
-
         }
 
     }
 
 }
 ```
-或者
-```kotlin
-newMusicRequester(this) { api -> api.searchMusic(name = name) } // 需要手写拓展函数
-.onSuccess {
-    //show...
-}
-.request()
-```
 
-### 2.取消请求
-```kotlin
-val requester = MusicServiceCore.newRequester(this) { api -> api.searchMusic(name = name) }.request()
-requester.cancel()
-```
 ## 需要实现的类
 ### 1.Retrofit的Service接口
 ```kotlin
@@ -80,12 +58,9 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
 ```
 ### 3.拓展函数(可选)
 ```kotlin
-
 @RetrofitServiceDslMarker
 fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
-
-fun <R> Any.newMusicRequester(lifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: (MusicApi) -> Observable<CommonResponse<R>>) = MusicServiceCore.newRequester(lifecycleObserver, preRequest)
 ```
 

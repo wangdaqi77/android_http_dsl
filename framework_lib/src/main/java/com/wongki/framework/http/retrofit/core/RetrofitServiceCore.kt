@@ -33,21 +33,21 @@ abstract class RetrofitServiceCore<API> : AbsRetrofitServiceCore<API>(), ISSL {
 
     /**
      * 创建新的网络请求器
-     * @param rxLifecycleObserver 生命周期观察器
-     * @param preRequest retrofit请求
+     * @param preRequest 请求服务器的api接口定义
+     * @param init 初始化网络请求器
      */
-    fun <RESPONSE_DATA> newRequester(rxLifecycleObserver: IHttpRetrofitLifecycleObserver? = null, preRequest: API.() -> Observable<CommonResponse<RESPONSE_DATA>>): RetrofitRequester<RESPONSE_DATA> {
-        val retrofitRequester = RetrofitRequester<RESPONSE_DATA>()
-        rxLifecycleObserver?.apply { retrofitRequester.lifecycleObserver { this } }
-        retrofitRequester.newRequest( preRequest)
-        return retrofitRequester
+    fun <RESPONSE_DATA> api(preRequest:API.()->Observable<CommonResponse<RESPONSE_DATA>>, init: RequesterBuilder<RESPONSE_DATA>.()-> RetrofitRequester<RESPONSE_DATA>):RetrofitRequester<RESPONSE_DATA>{
+        return RequesterBuilder<RESPONSE_DATA>().let{
+            it.call(preRequest)
+            it.init()
+        }
     }
 
     /**
      * 创建新的网络请求器
      * @param init 初始化网络请求器
      */
-    fun <RESPONSE_DATA> RetrofitServiceCore<API>.requestServer(init: RequesterBuilder<RESPONSE_DATA>.() -> RetrofitRequester<RESPONSE_DATA>): RetrofitRequester<RESPONSE_DATA> {
+    fun <RESPONSE_DATA> api(init: RequesterBuilder<RESPONSE_DATA>.() -> RetrofitRequester<RESPONSE_DATA>): RetrofitRequester<RESPONSE_DATA> {
         return RequesterBuilder<RESPONSE_DATA>().init()
     }
 
@@ -66,7 +66,7 @@ abstract class RetrofitServiceCore<API> : AbsRetrofitServiceCore<API>(), ISSL {
         /**
          * api请求
          */
-        fun api(preRequest: API.() -> Observable<CommonResponse<RESPONSE_DATA>>) {
+        fun call(preRequest: API.() -> Observable<CommonResponse<RESPONSE_DATA>>) {
             this.preRequest = preRequest
         }
 

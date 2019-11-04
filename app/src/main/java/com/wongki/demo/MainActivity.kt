@@ -33,27 +33,13 @@ class MainActivity : BaseHttpLifecycleActivity() {
                 return@setOnClickListener
             }
 
-//            MusicServiceCore
-//                .newRequester(this) { api -> api.searchMusic(name = name) }
-//                .onSuccess { list ->
-//                    //show...
-//                }
-//                .request()
-//
-//            newMusicRequester(this) { api -> api.searchMusic(name = name) }
-//                .onSuccess { list ->
-//                    //show...
-//                }
-//                .request()
-
-
             musicService {
 
-                requestServer<ArrayList<SearchMusic.Item>> {
+                api<ArrayList<SearchMusic.Item>> {
 
                     lifecycleObserver { this@MainActivity }
 
-                    api {
+                    call {
                         searchMusic(name = name)
                     }
 
@@ -73,16 +59,30 @@ class MainActivity : BaseHttpLifecycleActivity() {
 
             }
 
+            //或者（如果你懒得添加泛型）
 
-            newMusicRequester(this) { api -> api.searchMusic(name = name) }
-                .onSuccess {
-                    handleSuccess(view,this)
-                }
-                .onFailed { code, message ->
-                    message.toast()
-                    true
-                }
-                .request()
+//            musicService {
+//
+//                api({searchMusic(name = name)}) {
+//
+//                    lifecycleObserver { this@MainActivity }
+//
+//                    observer {
+//                        // 成功
+//                        onSuccess {
+//                            handleSuccess(view,this)
+//                        }
+//
+//                        onFailed { code, message ->
+//                            message.toast()
+//                            true
+//                        }
+//                    }
+//
+//                }
+//
+//            }
+
 
 
 //            cacheDir.listFiles().forEach{file -> file.delete() }
