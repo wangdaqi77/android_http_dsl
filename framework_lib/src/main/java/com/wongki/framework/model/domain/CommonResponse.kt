@@ -9,6 +9,6 @@ package com.wongki.framework.model.domain
 data class CommonResponse<T>(
         var code: Int = -1,
         var count: Int = -1,
-        var msg: String?= null,
+        var message: String?= null,
         var result: T? = null
 )

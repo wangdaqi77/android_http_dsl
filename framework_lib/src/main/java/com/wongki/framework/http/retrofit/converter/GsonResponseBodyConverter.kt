@@ -80,7 +80,7 @@ class GsonResponseBodyConverter<T>(private val gson: Gson, private val adapter: 
         }
 
         val code = commonResponse.code
-        val msg = commonResponse.msg
+        val msg = commonResponse.message
         when (code) {
             HttpCode.SUCCESSFUL -> return commonResponse as T
             else -> {
