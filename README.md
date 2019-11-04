@@ -11,7 +11,7 @@
 ```kotlin
 musicService {
 
-    MusicServiceCore.api<ArrayList<SearchMusic.Item>> {
+    api<ArrayList<SearchMusic.Item>> {
 
         lifecycleObserver { this@MainActivity }
 
