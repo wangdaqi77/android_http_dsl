@@ -1,5 +1,6 @@
 package com.wongki.demo.model.api
 
+import com.wongki.demo.model.bean.MyResponse
 import com.wongki.demo.model.bean.SearchMusic
 import com.wongki.framework.model.domain.CommonResponse
 import io.reactivex.Observable
@@ -14,5 +15,5 @@ import retrofit2.http.Query
  */
 interface MusicApi {
     @GET("/searchMusic")
-    fun searchMusic(@Query("name")name:String):Observable<CommonResponse<ArrayList<SearchMusic.Item>>>
+    fun searchMusic(@Query("name")name:String):Observable<MyResponse<ArrayList<SearchMusic.Item>>>
 }

@@ -1,6 +1,6 @@
 package com.wongki.framework.base
 
-import com.wongki.framework.http.retrofit.lifecycle.IHttpRetrofitLifecycleObserver
+import com.wongki.framework.http.retrofit.lifecycle.IHttpDestroyedObserver
 
 
 /**
@@ -9,9 +9,9 @@ import com.wongki.framework.http.retrofit.lifecycle.IHttpRetrofitLifecycleObserv
  * email:   wangqi7676@163.com
  * desc:    .
  */
-open class BaseHttpLifecycleActivity:BaseActivity(), IHttpRetrofitLifecycleObserver {
+open class BaseHttpLifecycleActivity:BaseActivity(), IHttpDestroyedObserver {
     override fun onDestroy() {
-        super<IHttpRetrofitLifecycleObserver>.onDestroy()
+        super<IHttpDestroyedObserver>.onDestroy()
         super<BaseActivity>.onDestroy()
     }
 }

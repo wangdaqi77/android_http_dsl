@@ -1,14 +1,19 @@
 package com.wongki.demo
 
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.wongki.demo.http.*
+import com.wongki.demo.model.bean.MyResponse
 import com.wongki.demo.model.bean.SearchMusic
 import com.wongki.framework.base.BaseHttpLifecycleActivity
 import com.wongki.framework.extensions.toast
+import com.wongki.framework.http.exception.ApiException
+import com.wongki.framework.http.global.globalHttpConfig
+import com.wongki.framework.utils.transform
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -35,18 +40,14 @@ class MainActivity : BaseHttpLifecycleActivity() {
 
             musicService {
 
-                api<ArrayList<SearchMusic.Item>> {
+                api { searchMusic(name = name) }.thenCall {
 
-                    lifecycleObserver { this@MainActivity }
-
-                    call {
-                        searchMusic(name = name)
-                    }
+                    lifecycleObserver = this@MainActivity
 
                     observer {
                         // 成功
                         onSuccess {
-                            handleSuccess(view,this)
+                            handleSuccess(view,this?.data)
                         }
 
                         onFailed { code, message ->
@@ -54,34 +55,9 @@ class MainActivity : BaseHttpLifecycleActivity() {
                             true
                         }
                     }
-
                 }
 
             }
-
-            //或者（如果你懒得添加泛型）
-
-//            musicService {
-//
-//                api({searchMusic(name = name)}) {
-//
-//                    lifecycleObserver { this@MainActivity }
-//
-//                    observer {
-//                        // 成功
-//                        onSuccess {
-//                            handleSuccess(view,this)
-//                        }
-//
-//                        onFailed { code, message ->
-//                            message.toast()
-//                            true
-//                        }
-//                    }
-//
-//                }
-//
-//            }
 
 
 
