@@ -56,7 +56,7 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
 }
 ```
-### 3.拓展函数(可选)
+### 3.拓展函数
 ```kotlin
 @RetrofitServiceDslMarker
 fun musicService(action:MusicServiceCore.()->Unit){
