@@ -98,7 +98,7 @@ class GsonResponseBodyConverter<T>(private val gson: Gson, private val adapter: 
 
         // 3.解析的结构并不是约束的CommonResponse的子类
         val responseClass = GlobalHttpConfig.RESPONSE_CLASS
-        if (responseClass.isInstance(convertResult)) {
+        if (!responseClass.isInstance(convertResult)) {
             throw ParseResponseException("解析失败，实体类必须是${responseClass.name}，请检查你定义Service接口的api函数返回值")
         }
 
