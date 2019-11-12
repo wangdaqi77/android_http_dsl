@@ -24,7 +24,7 @@ class DemoApplication: BaseApplication() {
 
         globalHttpConfig {
             // 配置统一的Response class
-            RESPONSE_SUB_CLASS = MyResponse::class.java
+            RESPONSE_CLASS = MyResponse::class.java
             // 配置成功状态码
             CODE_API_SUCCESS = 200
 

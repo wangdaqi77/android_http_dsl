@@ -35,7 +35,7 @@ object GlobalHttpConfig {
     var onResponseConvertFailedListener: OnResponseFailedConvertListener? = null
     var globalHttpErrorInterceptor: IErrorInterceptor? = null
     var CODE_API_SUCCESS = 0 // 与服务器协商的成功码
-    lateinit var RESPONSE_SUB_CLASS: Class<out CommonResponse<*>>
+    lateinit var RESPONSE_CLASS: Class<out CommonResponse<*>>
 
     /**
      * 当转换失败时被触发

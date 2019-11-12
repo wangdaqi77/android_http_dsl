@@ -9,26 +9,36 @@
 ## 例子
 ### 请求数据
 ```kotlin
+// 推荐
 musicService {
-
+    
     api { searchMusic(name = name) }.thenCall {
-
-        lifecycleObserver = this@MainActivity
-
-        observer {
         
-            onSuccess {
-                handleSuccess(view,this?.data)
-            }
-
-            onFailed { code, message ->
+        lifecycleObserver = this@MainActivity
+        observer {
+            onStart {  } // 开始发起网络请求
+            onCancel {  } // 取消网络请求，主动取消或页面销毁时
+            onSuccess { handleSuccess(view,this?.data) } // 成功
+            onFailed { code, message -> // 失败
                 message.toast()
                 true
             }
         }
+        
     }
-
+    
 }
+```
+或者
+```kotlin
+MusicServiceCore
+    .api { searchMusic("") }
+    .thenCall { 
+        lifecycleObserver = this@MainActivity
+        observer {
+            // ...
+        }
+    }
 ```
 
 ## 需要实现的类
