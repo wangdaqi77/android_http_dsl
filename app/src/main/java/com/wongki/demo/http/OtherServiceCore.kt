@@ -1,6 +1,7 @@
 package com.wongki.demo.http
 
 import com.wongki.demo.model.api.OtherApi
+import com.wongki.framework.http.config.HttpConfig
 import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 
 /**
@@ -10,9 +11,8 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
  * desc:    .
  */
 object OtherServiceCore : RetrofitServiceCore<OtherApi>() {
-    override val mHost = ""
+    override fun generateDefaultConfig() = config {
 
-    override fun getCommonRequestHeader(): MutableMap<String, String> = mutableMapOf()
-    override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
+    }
 
 }

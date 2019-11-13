@@ -1,20 +1,15 @@
 package com.wongki.demo
 
 import android.os.Bundle
-import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.wongki.demo.http.*
-import com.wongki.demo.model.bean.MyResponse
 import com.wongki.demo.model.bean.SearchMusic
 import com.wongki.framework.base.BaseHttpLifecycleActivity
 import com.wongki.framework.extensions.toast
-import com.wongki.framework.http.exception.ApiException
-import com.wongki.framework.http.global.globalHttpConfig
 import com.wongki.framework.http.retrofit.core.thenCall
-import com.wongki.framework.utils.transform
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -44,6 +39,11 @@ class MainActivity : BaseHttpLifecycleActivity() {
                 api { searchMusic(name = name) }.thenCall {
 
                     lifecycleObserver = this@MainActivity
+
+                    config {
+
+                    }
+
                     observer {
                         onStart {  } // 开始发起网络请求
                         onCancel {  } // 取消网络请求，主动取消或页面销毁时

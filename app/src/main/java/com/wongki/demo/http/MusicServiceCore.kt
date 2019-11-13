@@ -10,17 +10,51 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
  * desc:    .
  */
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
-    override val mHost = "https://api.apiopen.top"
+    /**
+     * 第一种：在全局的配置下进行配置
+     */
+    override fun generateDefaultConfig() = config {
+        host = "https://api.apiopen.top"
+        tag = "MusicServiceCore"
+        addApiErrorInterceptor2FirstNode{code,message->
+            false
+        }
+        addHeaders {
+            mutableMapOf(
+                "header" to "musicService",
+                "headerMusicService" to "musicService"
+            )
+        }
+
+        addUrlQueryParams {
+            mutableMapOf(
+                "urlQueryParam" to "musicService",
+                "urlQueryParamMusicService" to "musicService"
+            )
+        }
+
+    }
 
     /**
-     * 公共请求头
+     * 第二种：全新的配置，和全局配置没有关系
      */
-    override fun getCommonRequestHeader(): MutableMap<String, String> = mutableMapOf()
+//    override var defaultConfig: HttpConfig = newConfig {
+//        host = "https://api.apiopen.top"
+//        tag = "MusicServiceCore"
+//        addHeaders {
+//            mutableMapOf(
+//                "header" to "musicService",
+//                "headerMusicService" to "musicService"
+//            )
+//        }
+//
+//        addUrlQueryParams {
+//            mutableMapOf(
+//                "urlQueryParam" to "musicService",
+//                "urlQueryParamMusicService" to "musicService"
+//            )
+//        }
+//    }
 
-    /**
-     * 公共Url参数
-     * ex: &sex=1&age=18
-     */
-    override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
 
 }

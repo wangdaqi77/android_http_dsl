@@ -4,6 +4,7 @@ import com.wongki.demo.model.bean.MyResponse
 import com.wongki.demo.model.bean.SearchMusic
 import com.wongki.framework.model.domain.CommonResponse
 import io.reactivex.Observable
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Query
 

@@ -3,9 +3,11 @@ package com.wongki.demo
 import android.util.Log
 import com.wongki.demo.model.bean.MyResponse
 import com.wongki.framework.base.BaseApplication
+import com.wongki.framework.http.CONTENTTYPE_JSON
 import com.wongki.framework.http.exception.ApiException
-import com.wongki.framework.http.global.globalHttpConfig
+import com.wongki.framework.http.httpGlobalConfig
 import com.wongki.framework.utils.transform
+import okhttp3.MediaType
 
 /**
  * @author  wangqi
@@ -13,7 +15,7 @@ import com.wongki.framework.utils.transform
  * email:   wangqi7676@163.com
  * desc:    .
  */
-class DemoApplication: BaseApplication() {
+class DemoApplication : BaseApplication() {
 
     override fun onCreate() {
         super.onCreate()
@@ -22,49 +24,89 @@ class DemoApplication: BaseApplication() {
 
     private fun initHttp() {
 
-        globalHttpConfig {
+        /**
+         * http全局配置
+         */
+        httpGlobalConfig {
+            // tag
+            tag = "http全局配置"
             // 配置统一的Response class
-            RESPONSE_CLASS = MyResponse::class.java
-            // 配置成功状态码
-            CODE_API_SUCCESS = 200
+            responseClass = MyResponse::class.java
+            // 成功状态码，用于校验业务成功与否
+            successfulCode = 200
+            // 连接好事超时
+            connectTimeOut = 10_0000
+            // 读取超时时间
+            readTimeOut = 10_0000
+            // 写入超时时间
+            writeTimeOut = 10_0000
 
-            // 框架解析失败监听器，可以在此自己解析错误
-            onConvertFailed { response, mediaType ->
-                /**
-                 * 当转换失败时被触发
-                 * 在这里你需要把服务器的错误信息转换成ApiException，
-                 * 如果没有有效的服务器错误信息需要返回null
-                 */
-                Log.e("onConvertFailed","mediaType:$mediaType")
-                var code: Int = -1
-                var msg: String = ""
-                response.transform(MyResponse::class.java) { target ->
-                    code = optInt("code", -1)
-                    msg = optString("message", "")
-                }
-
-                if (code != -1) {
-                    return@onConvertFailed ApiException(code, msg)
-                }
-                return@onConvertFailed null
+            // log
+            log { message ->
+                Log.d("globalHttpConfig", message)
             }
 
+            /**
+             *  框架解析失败监听器
+             *  可以在此自己解析错误
+             */
+            onResponseConvertFailed { response, mediaType ->
+                var result: ApiException? = null
+                when (mediaType) {
+                    CONTENTTYPE_JSON -> {
+                        val myResponse = response.transform(MyResponse::class.java) { target ->
+                            target.code = optInt("code", -1)
+                            target.message = optString("message", "")
+                        }
 
-            // 全局的错误拦截
-            onErrorIntercept { code, message ->
-                /**
-                 * 当请求失败时被触发
-                 * 当返回true表示当前拦截处理
-                 */
-                when (code) {
-                    // token 失效
-                    1001->{
-                        // 跳转登录页...
-                        return@onErrorIntercept true
+                        if (myResponse.code != -1) {
+                            result = ApiException(myResponse.code, myResponse.message)
+                        }
                     }
                 }
-                return@onErrorIntercept false
+                Log.e(
+                    "onResponseConvertFailed", "解析结果:${result}\n" +
+                            "mediaType:$mediaType, response:$response"
+                )
+                return@onResponseConvertFailed result
+            }
 
+            /**
+             * 全局的错误拦截
+             *
+             * 当请求失败时被触发
+             * 当返回true表示当前拦截处理
+             */
+            addApiErrorInterceptor2FirstNode { code, message ->
+                when (code) {
+                    // token 失效
+                    1001 -> {
+                        // 跳转登录页...
+                        return@addApiErrorInterceptor2FirstNode true
+                    }
+                }
+                return@addApiErrorInterceptor2FirstNode false
+
+            }
+
+            /**
+             * 添加公共的请求头
+             */
+            addHeaders {
+                mutableMapOf(
+                    "header" to "global",
+                    "headerGlobal" to "global"
+                )
+            }
+
+            /**
+             * 添加公共的url参数
+             */
+            addUrlQueryParams {
+                mutableMapOf(
+                    "urlQueryParam" to "global",
+                    "urlQueryParamGlobal" to "global"
+                )
             }
         }
 
