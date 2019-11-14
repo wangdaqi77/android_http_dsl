@@ -1,6 +1,6 @@
 package com.wongki.demo.http
 
-import com.wongki.framework.http.retrofit.core.RetrofitServiceDslMarker
+import com.wongki.framework.http.HttpDsl
 
 /**
  * @author  wangqi
@@ -10,11 +10,11 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceDslMarker
  */
 
 
-@RetrofitServiceDslMarker
+@HttpDsl
 fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
-@RetrofitServiceDslMarker
+@HttpDsl
 fun otherService(action:OtherServiceCore.()->Unit){
     OtherServiceCore.action()
 }

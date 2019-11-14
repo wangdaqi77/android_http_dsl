@@ -1,6 +1,7 @@
 package com.wongki.framework.http.retrofit.core
 
 import com.wongki.framework.BuildConfig
+import com.wongki.framework.http.HttpDsl
 import com.wongki.framework.http.base.IRequester
 import com.wongki.framework.http.config
 import com.wongki.framework.http.config.HttpConfig
@@ -31,16 +32,16 @@ import java.util.concurrent.TimeUnit
  * desc:    retrofit网络请求框架核心类
  *
  */
-@DslMarker
-annotation class RetrofitServiceDslMarker
 
-@RetrofitServiceDslMarker
+
+@HttpDsl
 abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(), ISSL {
 
     /**
      * 请求服务器的api接口定义，请继续调用[thenCall]发起网络请求
      * @param api
      */
+    @HttpDsl
     fun <RESPONSE_DATA> api(api: SERVICE.() -> Observable<RESPONSE_DATA>): RequesterBuilderCreator<RESPONSE_DATA> {
         return RequesterBuilderCreator(api)
     }
@@ -48,7 +49,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
     /**
      * 网络请求构建器生成器
      */
-    @RetrofitServiceDslMarker
+    @HttpDsl
     inner class RequesterBuilderCreator<RESPONSE_DATA>(private val api: SERVICE.() -> Observable<RESPONSE_DATA>) {
         internal fun create() = this@RetrofitServiceCore.RequesterBuilder<RESPONSE_DATA>().apply {
             this.api(this@RequesterBuilderCreator.api)
@@ -58,8 +59,9 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
     /**
      * 网络请求构建器
      */
-    @RetrofitServiceDslMarker
+    @HttpDsl
     inner class RequesterBuilder<RESPONSE_DATA> {
+        @HttpDsl
         var lifecycleObserver: IHttpDestroyedObserver? = null
         private lateinit var api: SERVICE.() -> Observable<RESPONSE_DATA>
         // 默认使用默认的配置
@@ -69,6 +71,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
         /**
          * api请求
          */
+        @HttpDsl
         internal fun api(api: SERVICE.() -> Observable<RESPONSE_DATA>): RequesterBuilder<RESPONSE_DATA> {
             this.api = api
             return this
@@ -77,6 +80,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
         /**
          * 在默认配置的基础上进行配置[defaultConfig]
          */
+        @HttpDsl
         fun config(init: HttpConfigBuilder.() -> Unit): RequesterBuilder<RESPONSE_DATA> {
             this.config = this@RetrofitServiceCore.defaultConfig.config(init)
             return this
@@ -85,6 +89,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
         /**
          * 生成独立的配置
          */
+        @HttpDsl
         fun newConfig(init: HttpConfigBuilder.() -> Unit): RequesterBuilder<RESPONSE_DATA> {
             this.config = this@RetrofitServiceCore.newConfig(init)
             return this
@@ -93,6 +98,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
         /**
          * 观察此次的api请求
          */
+        @HttpDsl
         fun observer(init: RetrofitRequesterObserverBuilder<RESPONSE_DATA>.() -> Unit): RequesterBuilder<RESPONSE_DATA> {
             val requesterObserverBuilder = this@RetrofitServiceCore.RetrofitRequesterObserverBuilder<RESPONSE_DATA>()
             requesterObserverBuilder.init()
@@ -109,27 +115,43 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
         }
     }
 
-    @RetrofitServiceDslMarker
+    @HttpDsl
     inner class RetrofitRequesterObserverBuilder<RESPONSE_DATA> {
         internal var onStart: (() -> Unit)? = null
         internal var onFailed: ((Int, String) -> Boolean)? = null
         internal var onCancel: (() -> Unit)? = null
         internal var onSuccess: (RESPONSE_DATA.() -> Unit)? = null
 
+        /**
+         * 当开始发起请求
+         */
+        @HttpDsl
         fun onStart(onStart: () -> Unit) {
             this.onStart = onStart
         }
 
-        fun onFailed(onFailed: (Int, String) -> Boolean) {
-            this.onFailed = onFailed
+        /**
+         * 当取消请求时
+         */
+        @HttpDsl
+        fun onCancel(onCancel: () -> Unit) {
+            this.onCancel = onCancel
         }
 
+        /**
+         * 当成功时
+         */
+        @HttpDsl
         fun onSuccess(onSuccess: RESPONSE_DATA?.() -> Unit) {
             this.onSuccess = onSuccess
         }
 
-        fun onCancel(onCancel: () -> Unit) {
-            this.onCancel = onCancel
+        /**
+         * 当失败时
+         */
+        @HttpDsl
+        fun onFailed(onFailed: (Int, String) -> Boolean) {
+            this.onFailed = onFailed
         }
 
 
@@ -138,7 +160,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
     /**
      * 每次请求都会构建一个retrofit请求器
      */
-    @RetrofitServiceDslMarker
+    @HttpDsl
     inner class RetrofitRequester<RESPONSE_DATA> : IRetrofitRequester<SERVICE, RESPONSE_DATA>() {
         private var core = this@RetrofitServiceCore
         private var lifecycleObserver: WeakReference<IHttpDestroyedObserver?>? = null
@@ -370,6 +392,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
 /**
  * 设置完api，接下来你构建请求网络相关的
  */
+@HttpDsl
 fun <API, RESPONSE_DATA> RetrofitServiceCore<API>.RequesterBuilderCreator<RESPONSE_DATA>.thenCall(
     init: RetrofitServiceCore<API>.RequesterBuilder<RESPONSE_DATA>.() -> Unit
 ): IRequester {

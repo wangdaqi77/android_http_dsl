@@ -1,5 +1,6 @@
 package com.wongki.framework.http.retrofit.core
 
+import com.wongki.framework.http.*
 import com.wongki.framework.http.cacheSelf
 import com.wongki.framework.http.config
 import com.wongki.framework.http.config.HttpConfig
@@ -11,6 +12,7 @@ import com.wongki.framework.http.lifecycle.HttpLifecycleManager
 import com.wongki.framework.http.lifecycle.IHttpLifecycleManagerFactory
 import com.wongki.framework.http.lifecycle.IHttpRequesterManagerOwner
 import com.wongki.framework.http.interceptor.ApiErrorInterceptorNode
+import com.wongki.framework.http.newConfig
 import com.wongki.framework.http.retrofit.IRetrofit
 import com.wongki.framework.http.retrofit.lifecycle.HttpRequesterManagerHelper
 import com.wongki.framework.http.retrofit.observer.HttpCommonObserver
@@ -99,12 +101,14 @@ abstract class AbsRetrofitServiceCore<SERVICE> : IRetrofit<SERVICE>, IHttpReques
     /**
      * 生成独立的配置
      */
+    @HttpDsl
     protected fun newConfig(init: HttpConfigBuilder.() -> Unit) =
         com.wongki.framework.http.newConfig(init)
 
     /**
      * 在全局配置的基础上配置
      */
+    @HttpDsl
     protected fun config(init: HttpConfigBuilder.() -> Unit) =
         gConfig!!.config(init)
 
@@ -181,8 +185,8 @@ abstract class AbsRetrofitServiceCore<SERVICE> : IRetrofit<SERVICE>, IHttpReques
 
     protected fun <T> IHttpConfig.check(t: T?, filedName: String): T {
         return t ?: throw IllegalArgumentException(
-            "未配置host，请重写defaultConfig：\n" +
-                    "override var defaultConfig = newConfigWithGlobal { $filedName \"...\" }"
+            "未配置$filedName，请重写defaultConfig：\n" +
+                    "override var defaultConfig = config { $filedName \"...\" }"
         )
     }
 

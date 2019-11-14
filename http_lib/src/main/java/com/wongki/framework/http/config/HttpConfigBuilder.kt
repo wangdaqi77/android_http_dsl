@@ -1,5 +1,6 @@
 package com.wongki.framework.http.config
 
+import com.wongki.framework.http.HttpDsl
 import com.wongki.framework.http.interceptor.ApiErrorInterceptorNode
 import com.wongki.framework.http.log.ILog
 
@@ -9,7 +10,7 @@ import com.wongki.framework.http.log.ILog
  * email:   wangqi7676@163.com
  * desc:    .
  */
-@HttpConfigDslMarker
+@HttpDsl
 open class HttpConfigBuilder {
     constructor(config: HttpConfig? = null) {
         config ?: return
@@ -25,27 +26,37 @@ open class HttpConfigBuilder {
     }
 
     // tag
+    @HttpDsl
     var tag: String = ""
     // 域名
+    @HttpDsl
     var host: String? = null
     // 连接超时时间
+    @HttpDsl
     var connectTimeOut: Long? = null
     // 读取超时时间
+    @HttpDsl
     var readTimeOut: Long? = null
     // 写入超时时间
+    @HttpDsl
     var writeTimeOut: Long? = null
     // log
+    @HttpDsl
     internal var logger: ILog? = null
     // api请求错误拦截器
+    @HttpDsl
     internal var apiErrorInterceptorNode: ApiErrorInterceptorNode? = null
     // 添加header
+    @HttpDsl
     internal var addHeaderFunction: (() -> MutableMap<String, String?>)? = null
     // 添加url参数
+    @HttpDsl
     internal var addUrlQueryParamsFunction: (() -> MutableMap<String, String?>)? = null
 
     /**
      * log
      */
+    @HttpDsl
     fun log(init: (String) -> Unit) {
         this.logger = object : ILog {
             override fun log(message: String) {
@@ -55,11 +66,12 @@ open class HttpConfigBuilder {
     }
 
     /**
-     * api请求错误错误拦截
+     * api请求错误拦截
      * 当请求失败时被触发
-     * 当返回true表示当前拦截处理
      * @param onIntercept  1.code 2.message
+     * 返回true表示当前拦截处理
      */
+    @HttpDsl
     fun addApiErrorInterceptor2FirstNode(onIntercept: (Int, String) -> Boolean) {
         val interceptorNode = object : ApiErrorInterceptorNode() {
 
@@ -80,6 +92,7 @@ open class HttpConfigBuilder {
      * 公共的请求头
      * 发起请求时被触发
      */
+    @HttpDsl
     fun addHeaders(init: () -> MutableMap<String, String?>) {
         val function = this.addHeaderFunction
         this.addHeaderFunction =
@@ -100,6 +113,7 @@ open class HttpConfigBuilder {
      * 公共的url query参数（追加）
      * 发起请求时被触发
      */
+    @HttpDsl
     fun addUrlQueryParams(init: () -> MutableMap<String, String?>) {
         val function = this.addUrlQueryParamsFunction
         this.addUrlQueryParamsFunction =

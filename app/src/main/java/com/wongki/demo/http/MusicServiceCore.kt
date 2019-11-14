@@ -1,6 +1,7 @@
 package com.wongki.demo.http
 
 import com.wongki.demo.model.api.MusicApi
+import com.wongki.framework.http.HttpDsl
 import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 
 /**
@@ -9,12 +10,13 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
  * email:   wangqi7676@163.com
  * desc:    .
  */
+@HttpDsl
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     /**
      * 第一种：在全局的配置下进行配置
      */
     override fun generateDefaultConfig() = config {
-        host = "https://api.apiopen.top"
+        // host = "https://api.apiopen.top"
         tag = "MusicServiceCore"
         addApiErrorInterceptor2FirstNode{code,message->
             false

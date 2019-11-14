@@ -14,7 +14,10 @@ import java.lang.ref.WeakReference
  * date:    2019-11-11
  * email:   wangqi7676@163.com
  */
+@DslMarker
+annotation class HttpDsl
 
+internal var gConfigFunction: (HttpGlobalConfigBuilder.() -> Unit)? = null
 /**
  * 全局的配置
  *
@@ -23,7 +26,6 @@ import java.lang.ref.WeakReference
  *          ...
  *      }
  */
-internal var gConfigFunction: (HttpGlobalConfigBuilder.() -> Unit)? = null
 internal var gConfig: HttpConfig? = null
     get() {
         if (field == null) {
@@ -50,6 +52,7 @@ val CONTENTTYPE_JSON = MediaType.parse("application/json; charset=UTF-8").toStri
 /**
  * 全局配置
  */
+@HttpDsl
 fun httpGlobalConfig(init: HttpGlobalConfigBuilder.() -> Unit) {
     if (gConfigFunction != null) throw IllegalArgumentException("只能配置一次 httpGlobalConfig {}")
     gConfigFunction = init
@@ -69,12 +72,14 @@ fun notifyHttpConfigChange() {
 
 }
 
+@HttpDsl
 internal fun newConfig(init: HttpConfigBuilder.() -> Unit): HttpConfig {
     val builder = HttpConfigBuilder()
     builder.init()
     return builder.build()
 }
 
+@HttpDsl
 internal fun HttpConfig.config(init: HttpConfigBuilder.() -> Unit): HttpConfig {
     val builder = newBuilder()
     builder.init()
@@ -90,9 +95,18 @@ internal fun AbsRetrofitServiceCore<*>.cacheSelf() {
 }
 
 private fun IHttpConfig.checkGlobalConfig() {
-    requireNotNull(successfulCode) { "缺少参数[successfulCode]，请配置 httpGlobalConfig {successfulCode = value}" }
-    requireNotNull(responseClass) { "缺少参数[responseClass]，请配置 httpGlobalConfig {responseClass = value}" }
-    requireNotNull(onResponseConvertFailedListener) { "缺少参数[successfulCode]，请配置 httpGlobalConfig {onResponseConvertFailedListener {...}}" }
+    check(successfulCode,"successfulCode")
+    check(responseClass,"responseClass")
+    check(onResponseConvertFailedListener,"onResponseConvertFailedListener")
+}
+
+private fun <T> IHttpConfig.check(t: T?, filedName: String): T {
+    return t ?: throw IllegalArgumentException(filedName.getGlobalConfigErrorMessage()
+    )
+}
+
+internal fun String.getGlobalConfigErrorMessage(): String {
+  return  "未配置$this，请配置 httpGlobalConfig {$this ...}"
 }
 
 /**

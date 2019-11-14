@@ -1,4 +1,4 @@
-# 一个阅读性良好的网络框架（kotlin）
+# dsl 灵活的网络框架
 
 ## 优势
 ### 1.良好的阅读性
@@ -14,15 +14,13 @@ musicService {
     
     api { searchMusic(name = name) }.thenCall {
         
-        lifecycleObserver = this@MainActivity
-        observer {
+        lifecycleObserver = this@MainActivity // 生命周期观察器
+        config {  } //配置项
+        observer { // 观察
             onStart {  } // 开始发起网络请求
             onCancel {  } // 取消网络请求，主动取消或页面销毁时
-            onSuccess { handleSuccess(view,this?.data) } // 成功
-            onFailed { code, message -> // 失败
-                message.toast()
-                true
-            }
+            onSuccess {  } // 成功
+            onFailed { code, message -> true }// 失败
         }
         
     }
@@ -32,12 +30,11 @@ musicService {
 或者
 ```kotlin
 MusicServiceCore
-    .api { searchMusic("") }
+    .api {  }
     .thenCall { 
-        lifecycleObserver = this@MainActivity
-        observer {
-            // ...
-        }
+        lifecycleObserver = this
+        config {  }
+        observer {  }
     }
 ```
 
@@ -52,18 +49,13 @@ interface MusicApi {
 ### 2.RetrofitServiceCore的实现类
 ```kotlin
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
-    override val mHost = "https://api.apiopen.top"
-
-    /**
-     * 公共请求头
-     */
-    override fun getCommonRequestHeader(): MutableMap<String, String> = mutableMapOf()
-
-    /**
-     * 公共Url参数
-     * ex: &sex=1&age=18
-     */
-    override fun getCommonUrlRequestParams(): MutableMap<String, String> = mutableMapOf()
+    override fun generateDefaultConfig() = config {
+        host = "https://api.apiopen.top"
+        connectTimeOut = 10_000
+        readTimeOut = 10_000
+        writeTimeOut = 10_000
+        addHeaders {  }
+    }
 }
 ```
 ### 3.拓展函数
@@ -75,49 +67,46 @@ fun musicService(action:MusicServiceCore.()->Unit){
 ```
 ### 4.全局配置(推荐在你的Application进行配置)
 ```kotlin
-globalHttpConfig {
-    // 配置统一的Response class
-    RESPONSE_SUB_CLASS = MyResponse::class.java
-    // 配置成功状态码
-    CODE_API_SUCCESS = 200
+httpGlobalConfig {
+    tag = "http全局配置"
+    responseClass = MyResponse::class.java
+    successfulCode = 200
+    log { message -> Log.d("globalHttpConfig", message)}
+    onResponseConvertFailed { response, mediaType ->
+        var result: ApiException? = null
+        when (mediaType) {
+            CONTENTTYPE_JSON -> {
+                val myResponse = response.transform(MyResponse::class.java) { target ->
+                    target.code = optInt("code", -1)
+                    target.message = optString("message", "")
+                }
 
-    // 框架解析失败监听器，可以在此自己解析错误
-    onConvertFailed { response, mediaType ->
-        /**
-         * 当转换失败时被触发
-         * 在这里你需要把服务器的错误信息转换成ApiException，
-         * 如果没有有效的服务器错误信息需要返回null
-         */
-        Log.e("onConvertFailed","mediaType:$mediaType")
-        var code: Int = -1
-        var msg: String = ""
-        response.transform(MyResponse::class.java) { target ->
-            code = optInt("code", -1)
-            msg = optString("message", "")
-        }
-
-        if (code != -1) {
-            return@onConvertFailed ApiException(code, msg)
-        }
-        return@onConvertFailed null
-    }
-
-
-    // 全局的错误拦截
-    onErrorIntercept { code, message ->
-        /**
-         * 当请求失败时被触发
-         * 当返回true表示当前拦截处理
-         */
-        when (code) {
-            // token 失效
-            1001->{
-                // 跳转登录页...
-                return@onErrorIntercept true
+                if (myResponse.code != -1) {
+                    result = ApiException(myResponse.code, myResponse.message)
+                }
             }
         }
-        return@onErrorIntercept false
+        Log.e(
+            "onResponseConvertFailed", "解析结果:${result}\n" +
+                    "mediaType:$mediaType, response:$response"
+        )
+        return@onResponseConvertFailed result
+    }
+    addApiErrorInterceptor2FirstNode { code, message ->
+        when (code) {
+            // token 失效
+            1001 -> {
+                // 跳转登录页...
+                return@addApiErrorInterceptor2FirstNode true
+            }
+        }
+        return@addApiErrorInterceptor2FirstNode false
 
+    }
+    addHeaders {
+        mutableMapOf(
+            "key" to "value"
+        )
     }
 }
 ```

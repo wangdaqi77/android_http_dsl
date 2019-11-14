@@ -4,8 +4,10 @@ import android.util.Log
 import com.wongki.demo.model.bean.MyResponse
 import com.wongki.framework.base.BaseApplication
 import com.wongki.framework.http.CONTENTTYPE_JSON
+import com.wongki.framework.http.config.HttpConfigBuilder
 import com.wongki.framework.http.exception.ApiException
 import com.wongki.framework.http.httpGlobalConfig
+import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 import com.wongki.framework.utils.transform
 import okhttp3.MediaType
 
@@ -30,16 +32,18 @@ class DemoApplication : BaseApplication() {
         httpGlobalConfig {
             // tag
             tag = "http全局配置"
+            // host 域名
+            host = "https://api.apiopen.top"
             // 配置统一的Response class
             responseClass = MyResponse::class.java
             // 成功状态码，用于校验业务成功与否
             successfulCode = 200
             // 连接好事超时
-            connectTimeOut = 10_0000
+            connectTimeOut = 10_000
             // 读取超时时间
-            readTimeOut = 10_0000
+            readTimeOut = 10_000
             // 写入超时时间
-            writeTimeOut = 10_0000
+            writeTimeOut = 10_000
 
             // log
             log { message ->
@@ -47,8 +51,8 @@ class DemoApplication : BaseApplication() {
             }
 
             /**
-             *  框架解析失败监听器
-             *  可以在此自己解析错误
+             * 响应体转换失败处理
+             * 当响应体结构转换失败时被触发
              */
             onResponseConvertFailed { response, mediaType ->
                 var result: ApiException? = null

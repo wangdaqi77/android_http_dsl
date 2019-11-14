@@ -1,11 +1,14 @@
 package com.wongki.framework.http.config
 
+import com.wongki.framework.http.HttpDsl
+
 /**
  * @author  wangqi
  * date:    2019-11-12
  * email:   wangqi7676@163.com
  * desc:    .
  */
+@HttpDsl
 open class HttpConfig(builder: HttpConfigBuilder) : IHttpConfig() {
     internal var addHeaderFunction: (() -> MutableMap<String, String?>)? = null
     internal var addUrlQueryParamsFunction: (() -> MutableMap<String, String?>)? = null

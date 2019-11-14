@@ -40,11 +40,9 @@ class MainActivity : BaseHttpLifecycleActivity() {
 
                     lifecycleObserver = this@MainActivity
 
-                    config {
+                    config {  } //配置项
 
-                    }
-
-                    observer {
+                    observer { // 观察
                         onStart {  } // 开始发起网络请求
                         onCancel {  } // 取消网络请求，主动取消或页面销毁时
                         onSuccess { handleSuccess(view,this?.data) } // 成功

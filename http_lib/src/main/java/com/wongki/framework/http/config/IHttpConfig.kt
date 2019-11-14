@@ -1,5 +1,6 @@
 package com.wongki.framework.http.config
 
+import com.wongki.framework.http.HttpDsl
 import com.wongki.framework.http.interceptor.ApiErrorInterceptorNode
 import com.wongki.framework.http.listener.OnResponseFailedConvertListener
 import com.wongki.framework.http.log.ILog
@@ -12,14 +13,12 @@ import com.wongki.framework.model.domain.CommonResponse
  * desc:    .
  */
 
-@DslMarker
-annotation class HttpConfigDslMarker
 
 /**
  * 配置读取的先后顺序
  * 单次请求->service->global
  */
-@HttpConfigDslMarker
+@HttpDsl
 abstract class IHttpConfig {
     internal open var tag: String = "请设置tag"
     // 域名
@@ -61,9 +60,9 @@ abstract class IHttpConfig {
         override var host: String? = null
         override var successfulCode: Int? = 0
         override var responseClass: Class<out CommonResponse<*>>? = null
-        override var connectTimeOut: Long? = 30_000
-        override var readTimeOut: Long? = 30_000
-        override var writeTimeOut: Long? = 30_000
+        override var connectTimeOut: Long? = null
+        override var readTimeOut: Long? = null
+        override var writeTimeOut: Long? = null
         override var logger: ILog? = ILog.DEFAULT
         override var onResponseConvertFailedListener: OnResponseFailedConvertListener? =
             OnResponseFailedConvertListener.DEFAULT
