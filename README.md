@@ -72,6 +72,7 @@ httpGlobalConfig {
     responseClass = MyResponse::class.java
     successfulCode = 200
     log { message -> Log.d("globalHttpConfig", message)}
+    
     onResponseConvertFailed { response, mediaType ->
         var result: ApiException? = null
         when (mediaType) {
@@ -92,6 +93,7 @@ httpGlobalConfig {
         )
         return@onResponseConvertFailed result
     }
+    
     addApiErrorInterceptor2FirstNode { code, message ->
         when (code) {
             // token 失效
@@ -103,6 +105,7 @@ httpGlobalConfig {
         return@addApiErrorInterceptor2FirstNode false
 
     }
+    
     addHeaders {
         mutableMapOf(
             "key" to "value"
