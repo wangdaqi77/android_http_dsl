@@ -183,7 +183,7 @@ api { searchMusic(name = name) }.thenCall {
   
 返回值遵循以下约定：  
  * 当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#apierrorinterceptornode)中正确的处理该错误code；  
- * 当你无法理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[HttpErrorCode.PARSE_FAILED]  
+ * 当你无法理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[PARSE_FAILED](#内部错误码说明)  
 ```kotlin
 httpGlobalConfig {
     // ...
@@ -238,7 +238,7 @@ httpGlobalConfig {
 添加公共的url请求公参。
 
 ## 四、其他
-#### 定义响应体
+### 定义响应体
 必须继承[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
   
 第一种情况：  
@@ -286,3 +286,16 @@ class MyResponse<T> : CommonResponse<T> {
     }
 }
 ```
+#### 内部错误码说明
+常量 | 值 | 含义
+------ | :------: | ------
+UNKNOWN_FAILED | -100 | 未知失败
+PARSE_FAILED | -101 | 解析数据失败
+CONNECTION_FAILED | -102 | 连接失败
+HOST_UNKNOWN_FAILED | -103 | host错误
+TIMEOUT_FAILED | -104 | 请求超时
+REQUEST_FAILED | -105 | 请求失败
+FILE_NOT_FOUND_FAILED | -106 | 文件未找到
+FILE_WRITE_FAILED | -107 | 写入文件失败
+
+###### 详情查看[HttpErrorCode](/http_lib/src/main/java/com/wongki/framework/http/HttpErrorCode.kt)
