@@ -130,7 +130,7 @@ addUrlQueryParams | url公参 | ✔️ | ✔️ | ✔️ | 追加
 #### host
 域名。
 #### successfulCode
-成功码，[success](#observe)的触发是基于这个成功码判定的。
+成功码，[onSuccess](#observe)的触发是基于这个成功码判定的。
 #### responseClass
 响应的结构体。
 #### connectTimeOut
@@ -148,9 +148,8 @@ addUrlQueryParams | url公参 | ✔️ | ✔️ | ✔️ | 追加
 例如：正常result为User类型时，实际返回{"code":200,"message":"成功!","result":""}那么此方法必定被执行，因为result为String被解析成User是不允许的。
 
 返回值遵循以下规则：
-
-    1.当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在onFailed中正确的处理该错误code。
-    2.当你能理解这个错误时返回null，当返回null时，你会在onFailed中接收到code:[HttpErrorCode.PARSE_FAILED]
+    1.当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#onSuccess)中正确的处理该错误code。
+    2.当你能理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[HttpErrorCode.PARSE_FAILED]
 ```kotlin
 httpGlobalConfig {
     // ...
@@ -176,9 +175,9 @@ httpGlobalConfig {
 api错误拦截器，当请求失败时触发。
 
 返回值遵循以下规则：
-
     1.当明确需要拦截处理该错误时，返回true。该错误会停止继续传递。
     2.当不处理该错误时，返回false。该错误会继续传递。
+    
 例如：登录失效的错误码为1001，常规的处理是跳转到登录页。
 ```kotlin
 httpGlobalConfig {
