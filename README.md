@@ -132,7 +132,7 @@ api { searchMusic(name = name) }.thenCall {
 
 ### 配置项
 
-配置项 | 含义 | 支持全局配置 | 支持服务配置 | 支持单次api配置 | config{}代码块
+配置项 | 含义 | 支持全局配置 | 支持服务配置 | 支持单次api配置 | [config代码块](#基于xx配置进行配置)
 -------- | -------- | :--------: | :--------: | :--------: | :--------:
 [tag](#tag) | 标签 | ✔️ | ✔️ | ✔️ | 覆盖
 [host](#host) | 域名 | ✔️ | ✔️ | ✔️ |覆盖
@@ -154,7 +154,7 @@ api { searchMusic(name = name) }.thenCall {
 #### successfulCode
 成功码，[onSuccess](#observe)的触发是基于这个成功码判定的。
 #### responseClass
-响应的结构体。必须继承[CommonResponse](#/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
+响应的结构体。必须继承[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
 #### connectTimeOut
 连接超时，单位ms。
 #### readTimeOut
