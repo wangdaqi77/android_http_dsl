@@ -103,7 +103,7 @@ httpGlobalConfig {  }
 config{  }
 ```
 例如在上面的搜索音乐的例子中：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项)。  
+&emsp;&emsp;当实现[音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项)。  
 &emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项)。
 
 #### 全新的独立配置
@@ -111,7 +111,7 @@ config{  }
 newConfig{  }
 ```
 例如在上面搜索音乐的例子中改动一下：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置是**全新的独立配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
+&emsp;&emsp;当实现[音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置是**全新的独立配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
 ```kotlin
 override fun generateDefaultConfig() = newConfig {  }
 ```
