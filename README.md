@@ -1,4 +1,4 @@
-# dsl 灵活的网络框架
+# 基于okhttp+retrofit+rxjava+kotlin开发的网络框架
 
 ## 优势
 
