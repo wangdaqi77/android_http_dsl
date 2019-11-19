@@ -11,7 +11,6 @@ import com.wongki.framework.model.domain.CommonResponse
  * @author  wangqi
  * date:    2019-11-12
  * email:   wangqi7676@163.com
- * 优先使用全局的配置，只在内部使用
  */
 internal class PriorityConfig(initializer: () -> Array<IHttpConfig?>) : IHttpConfig() {
     override var tag: String = ""

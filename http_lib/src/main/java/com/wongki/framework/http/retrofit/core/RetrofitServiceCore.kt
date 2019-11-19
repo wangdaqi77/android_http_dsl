@@ -162,7 +162,7 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
      */
     @HttpDsl
     inner class RetrofitRequester<RESPONSE_DATA> : IRetrofitRequester<SERVICE, RESPONSE_DATA>() {
-        private var core = this@RetrofitServiceCore
+        private var core   = this@RetrofitServiceCore
         private var lifecycleObserver: WeakReference<IHttpDestroyedObserver?>? = null
         private lateinit var callApi: SERVICE.() -> Observable<RESPONSE_DATA>
         private lateinit var config: HttpConfig
