@@ -7,7 +7,7 @@
  * 生命周期管理，界面销毁即取消网络请求
  * 优雅的配置
  * 错误拦截处理机制
-## 概念
+## 名称概念说明
 
  * xx服务接口，kotlin接口中定义的HTTP API，参考[Retrofit-API Declaration](https://square.github.io/retrofit/#api-declaration)
  * xx服务核心类，基于xx服务接口声明的服务核心类，需要继承[RetrofitServiceCore]，参考[核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
