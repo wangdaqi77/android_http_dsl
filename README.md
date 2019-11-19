@@ -13,7 +13,7 @@
  * xx服务核心类：基于xx服务接口声明的服务核心类，需要继承[RetrofitServiceCore]，参考[核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
  * 配置：网络请求的配置，域名、公参等等..，参考[配置](#配置)
  
-## 例子
+## 一、例子
 ### 搜索音乐
 #### 发起搜索音乐请求api
 ```kotlin
@@ -79,7 +79,7 @@ httpGlobalConfig {
     }
 }
 ```
-## 发起api请求的说明
+## 二、发起api请求的说明
 ### api
 kotlin接口中定义的HTTP API，例如[音乐服务接口](#需要实现的类和配置)
 ### thenCall
@@ -132,7 +132,7 @@ api { searchMusic(name = name) }.thenCall {
  * onSuccess：当请求成功时。
  * onFailed：当失败时。
 
-## 配置项说明
+## 三、配置项说明
 
 名称 | 含义 | 支持全局配置 | 支持服务配置 | 支持单次api配置 | [config代码块](#基于xx配置进行配置)
 -------- | -------- | :--------: | :--------: | :--------: | :--------:
@@ -237,7 +237,7 @@ httpGlobalConfig {
 ### addUrlQueryParams
 添加公共的url请求公参。
 
-## 其他
+## 四、其他
 #### 定义响应体
 必须继承[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
   
