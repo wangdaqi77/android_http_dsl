@@ -3,15 +3,15 @@
 ## 优势
 
  * 良好的阅读性
- * 使用时无需声明网络请求返回的具体类型
+ * 发起api请求时无需声明响应的具体类型
  * 生命周期管理，界面销毁即取消网络请求
  * 优雅的配置
- * 错误拦截处理
+ * 错误拦截处理机制
 
 ## 例子
 ### 搜索音乐
 
- * 发起搜索音乐请求api
+#### 发起搜索音乐请求api
 ```kotlin
 // 推荐
 musicService {
@@ -42,14 +42,14 @@ MusicServiceCore
 
 ### 需要实现的类
 
- * 音乐服务接口
+#### 音乐服务接口
 ```kotlin
 interface MusicApi {
     @GET("/searchMusic")
     fun searchMusic(@Query("name")name:String):Observable<MyResponse<ArrayList<SearchMusic.Item>>>
 }
 ```
- * 音乐服务核心类
+#### 音乐服务核心类
 ```kotlin
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     override fun generateDefaultConfig() = config {
@@ -58,14 +58,15 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     }
 }
 ```
- * 音乐服务的拓展函数
+#### 音乐服务的拓展函数
 ```kotlin
 @RetrofitServiceDslMarker
 fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
 ```
- * 全局配置(推荐在你的Application进行配置)
+#### 全局配置
+推荐在你的Application进行配置
 ```kotlin
 httpGlobalConfig {
     tag = "http全局配置"
@@ -79,28 +80,28 @@ httpGlobalConfig {
 ```
 ## 说明
 ### lifecycleObserver
-网络请求的生命周期观察器。
+网络请求的生命周期观察器。设置该参数意味着一次网络请求和该观察器存在绑定关系。
 
-需要实现IHttpDestroyedObserver接口，该接口里有clearRequest()的默认实现函数，该函数会将所有绑定到自己的请求器进行取消请求处理。所以clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你想清除的地方主动调用clearRequest()。
+lifecycleObserver的值需要实现IHttpDestroyedObserver接口，该接口里有clearRequest()的默认实现函数，该函数会将所有绑定到自己的请求器进行取消请求处理。所以clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你明确需要取消请求的位置主动调用clearRequest()。
 
 ### config
 基于XX配置进行配置。
 
 例如在上面的搜索音乐的例子中：
-当实现MusicServiceCore音乐服务核心类时重写了generateDefaultConfig()函数，该函数的返回值为config代码块，这就代表了MusicServiceCore音乐服务核心类的默认配置是**基于全局配置进行配置**的。
-当发起搜索音乐请求api时，thenCall代码块中声明了config代码块，这就代表了该请求的配置是**基于MusicServiceCore音乐服务核心类的默认配置进行配置**的。
+当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值为config代码块，这就代表了[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置是**基于[全局配置](#全局配置)进行配置**的。
+当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了config代码块，这就代表了该请求的配置是**基于[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置进行配置**的。
 
 ### newConfig
 全新的独立配置。
 
 例如在上面的搜索音乐例子中改动一下：
-当实现MusicServiceCore音乐服务核心类时重写了generateDefaultConfig()函数，将函数的返回值替换为为newConfig代码块，这就代表了MusicServiceCore音乐服务核心类的默认配置完全是**新的独立的配置**，他所能配置的配置项和全局配置没有关系。
+当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将函数的返回值替换为为newConfig代码块，这就代表了[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置完全是**新的独立的配置**，他所能配置的配置项和[全局配置](#全局配置)没有关系。
 ```kotlin
 override fun generateDefaultConfig() = newConfig {
     // ...
 }
 ```
-当发起搜索音乐请求api时，thenCall代码块中声明了config代码块替换为newConfig代码块，这就代表了该请求的配置是**新的独立的配置**，他所能配置的配置项和MusicServiceCore音乐服务核心类的配置没有关系。
+当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了[config](#config)代码块替换为newConfig代码块，这就代表了该请求的配置是**新的独立的配置**，他所能配置的配置项和[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置没有关系。
 ```kotlin
 // 推荐
 musicService {
@@ -124,16 +125,16 @@ musicService {
 -------- | -------- | :--------: | :--------: | :--------: | :--------:
 [tag](#tag) | 标签 | ✔️ | ✔️ | ✔️ | 覆盖
 [host](#host) | 域名 | ✔️ | ✔️ | ✔️ |覆盖
-[successfulCode](#successfulCode) | 成功码 | ✔️ |  ❌| ❌ | -
-[responseClass](#responseClass) | 响应结构 | ✔️ |  ❌| ❌ | -
-[connectTimeOut](#connectTimeOut) | 连接超时 | ✔️ | ✔️ | ✔️ | 覆盖
-[readTimeOut](#readTimeOut) | 读取超时 | ✔️ | ✔️ | ✔️ | 覆盖
-[writeTimeOut](#writeTimeOut) | 写入超时 | ✔️ | ✔️ | ✔️ | 覆盖
+[successfulCode](#successfulcode) | 成功码 | ✔️ |  ❌| ❌ | -
+[responseClass](#responseclass) | 响应结构 | ✔️ |  ❌| ❌ | -
+[connectTimeOut](#connecttimeout) | 连接超时 | ✔️ | ✔️ | ✔️ | 覆盖
+[readTimeOut](#readtimeout) | 读取超时 | ✔️ | ✔️ | ✔️ | 覆盖
+[writeTimeOut](#writetimeout) | 写入超时 | ✔️ | ✔️ | ✔️ | 覆盖
 [logger](#logger) | log | ✔️ | ✔️ | ✔️ | 覆盖
-[onResponseConvertFailedListener](#onResponseConvertFailedListener) | 响应体解析失败 | ✔️ | ❌| ❌ | -
-[apiErrorInterceptorNode](#apiErrorInterceptorNode) | 请求失败拦截器 | ✔️ | ✔️ | ✔️ | 链表插入头
-[addHeaders](#addHeaders) | 请求头公参 | ✔️ | ✔️ | ✔️ | 追加
-[addUrlQueryParams](#addUrlQueryParams) | url公参 | ✔️ | ✔️ | ✔️ | 追加
+[onResponseConvertFailedListener](#onresponseconvertfailedlistener) | 响应体解析失败 | ✔️ | ❌| ❌ | -
+[apiErrorInterceptorNode](#apierrorinterceptornode) | 请求失败拦截器 | ✔️ | ✔️ | ✔️ | 链表插入头
+[addHeaders](#addheaders) | 请求头公参 | ✔️ | ✔️ | ✔️ | 追加
+[addUrlQueryParams](#addurlqueryparams) | url公参 | ✔️ | ✔️ | ✔️ | 追加
 
 #### tag
 标签，目前在框架内打印log时使用。
@@ -157,7 +158,7 @@ musicService {
 
 例如：正常result为User类型时，实际返回{"code":200,"message":"成功!","result":""}那么此方法必定被执行，因为result为String被解析成User是不允许的。
 
-返回值遵循以下约定：当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)中正确的处理该错误code；当你能理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[HttpErrorCode.PARSE_FAILED]
+返回值遵循以下约定：当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#apiErrorInterceptorNode)中正确的处理该错误code；当你能理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[HttpErrorCode.PARSE_FAILED]
 ```kotlin
 httpGlobalConfig {
     // ...
