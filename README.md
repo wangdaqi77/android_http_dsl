@@ -65,7 +65,7 @@ fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
 ```
-##### 全局配置
+##### 进行全局配置
 在自定义的Application进行配置
 ```kotlin
 httpGlobalConfig {
@@ -86,45 +86,41 @@ httpGlobalConfig {
 &emsp;&emsp;clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你明确需要取消请求的位置主动调用clearRequest()。
 
 ### 配置
-配置有三种：[全局配置](#httpglobalconfig)、[基于XX配置进行配置](#config)、[全新的配置](#newconfig)
+配置有三种：[全局配置](#全局配置)、[基于xx配置进行配置](#基于xx配置进行配置)、[全新的独立配置](#全新的独立配置)
 
-#### httpGlobalConfig
-全局配置，推荐在你的自定义application进行全局配置。  
+#### 全局配置
+```kotlin
+// 推荐在你的自定义application进行全局配置。  
+httpGlobalConfig {  }
+```
   
 必配项（只支持在全局配置中）：  
 [successfulCode](#successfulcode)、[responseClass](#responseclass)、[onResponseConvertFailedListener](#onresponseconvertfailedlistener)    
 
+
+#### 基于xx配置进行配置
 ```kotlin
-httpGlobalConfig {
-    // ...
-}
+config{  }
 ```
-#### config
-基于XX配置进行配置。
-  
 例如在上面的搜索音乐的例子中：  
 &emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的。  
 &emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的。  
 
-#### newConfig
-全新的独立配置。
-
-例如在上面搜索音乐的例子中改动一下：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置完全是**新的独立的配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
+#### 全新的独立配置
 ```kotlin
-override fun generateDefaultConfig() = newConfig {
-    // ...
-}
+newConfig{  }
 ```
-&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了[config](#config)代码块替换为newConfig代码块，表示发起api请求时的配置是**新的独立的配置**，它所能配置的配置项与其所属的服务核心类的默认配置没有关系。  
+例如在上面搜索音乐的例子中改动一下：  
+&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置完全是**全新的独立配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
 ```kotlin
-// 推荐
-musicService {
-    api { searchMusic(name = name) }.thenCall {
-        lifecycleObserver = this
-        newConfig {  } 
-        observer {  }
-    }
+override fun generateDefaultConfig() = newConfig {  }
+```
+&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了[config](#config)代码块替换为newConfig代码块，表示发起api请求时的配置是**全新的独立配置**，它所能配置的配置项与其所属的服务核心类的默认配置没有关系。  
+```kotlin
+// ..
+api { searchMusic(name = name) }.thenCall {
+    // ..
+    newConfig {  } 
 }
 ```
 ### observe
