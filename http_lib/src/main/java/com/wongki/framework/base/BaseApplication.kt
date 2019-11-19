@@ -6,7 +6,7 @@ import android.app.Application
 /**
  * @author  wangqi
  * date:    2019/6/19
- * email:   wangqi@feigeter.com
+ * email:   wangqi7676@163.com
  * desc:    .
  */
 open class BaseApplication : Application() {
