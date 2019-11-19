@@ -183,7 +183,7 @@ api { searchMusic(name = name) }.thenCall {
   
 返回值遵循以下约定：  
  * 当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#apierrorinterceptornode)中正确的处理该错误code；  
- * 当你能理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[HttpErrorCode.PARSE_FAILED]  
+ * 当你无法理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[HttpErrorCode.PARSE_FAILED]  
 ```kotlin
 httpGlobalConfig {
     // ...
