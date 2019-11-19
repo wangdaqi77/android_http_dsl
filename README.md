@@ -156,7 +156,7 @@ api { searchMusic(name = name) }.thenCall {
 ### successfulCode
 成功码，[onSuccess](#observe)的触发是基于这个成功码判定的。
 ### responseClass
-响应的结构体。必须继承[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
+响应的结构体。必须实现[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)接口
 ### connectTimeOut
 连接超时，单位ms。
 ### readTimeOut
