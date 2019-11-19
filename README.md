@@ -66,7 +66,7 @@ fun musicService(action:MusicServiceCore.()->Unit){
 }
 ```
 #### 全局配置
-推荐在你的Application进行配置
+在自定义的Application进行配置
 ```kotlin
 httpGlobalConfig {
     tag = "http全局配置"
@@ -82,26 +82,41 @@ httpGlobalConfig {
 ### lifecycleObserver
 网络请求的生命周期观察器。设置该参数意味着一次网络请求和该观察器存在绑定关系。
   
-&emsp;&emsp;lifecycleObserver的值需要实现IHttpDestroyedObserver接口，该接口里有clearRequest()的默认实现函数，该函数会将所有绑定到自己的请求器进行取消请求处理。所以clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你明确需要取消请求的位置主动调用clearRequest()。
+&emsp;&emsp;lifecycleObserver的值需要实现IHttpDestroyedObserver接口，该接口里有clearRequest()的默认实现函数，该函数会将所有绑定到自己的请求器进行取消请求处理。  
+&emsp;&emsp;clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你明确需要取消请求的位置主动调用clearRequest()。
 
-### config
+### 配置
+###### 配置有三种，[全局配置](#httpglobalconfig)、[基于XX配置进行配置](#config)、[全新的配置](#newconfig)
+
+#### httpGlobalConfig
+全局配置，推荐在你的自定义application进行全局配置。  
+  
+必配项（也只能在全局进行配置）：  
+[successfulCode](#successfulcode)、[responseClass](#responseclass)、[onResponseConvertFailedListener](#onresponseconvertfailedlistener)    
+
+```kotlin
+httpGlobalConfig {
+    // ...
+}
+```
+#### config
 基于XX配置进行配置。
   
 例如在上面的搜索音乐的例子中：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值为config代码块，这就代表了[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置是**基于[全局配置](#全局配置)进行配置**的。  
-&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了config代码块，这就代表了该请求的配置是**基于[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置进行配置**的。  
+&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的。  
+&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的。  
 
-### newConfig
+#### newConfig
 全新的独立配置。
 
-例如在上面的搜索音乐例子中改动一下：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将函数的返回值替换为为newConfig代码块，这就代表了[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置完全是**新的独立的配置**，他所能配置的配置项和[全局配置](#全局配置)没有关系。  
+例如在上面搜索音乐的例子中改动一下：  
+&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置完全是**新的独立的配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
 ```kotlin
 override fun generateDefaultConfig() = newConfig {
     // ...
 }
 ```
-&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了[config](#config)代码块替换为newConfig代码块，这就代表了该请求的配置是**新的独立的配置**，他所能配置的配置项和[MusicServiceCore音乐服务核心类](#音乐服务核心类)的默认配置没有关系。  
+&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了[config](#config)代码块替换为newConfig代码块，表示发起api请求时的配置是**新的独立的配置**，它所能配置的配置项与其所属的服务核心类的默认配置没有关系。  
 ```kotlin
 // 推荐
 musicService {
