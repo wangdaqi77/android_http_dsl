@@ -9,9 +9,9 @@
  * 错误拦截处理机制
 ## 名称概念说明
 
- * xx服务接口，kotlin接口中定义的HTTP API，参考[Retrofit-API Declaration](https://square.github.io/retrofit/#api-declaration)
- * xx服务核心类，基于xx服务接口声明的服务核心类，需要继承[RetrofitServiceCore]，参考[核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
- * 配置，网络请求的配置，域名、公参等等..，参考[配置](#配置)
+ * xx服务接口：kotlin接口中定义的HTTP API，参考[Retrofit-API Declaration](https://square.github.io/retrofit/#api-declaration)
+ * xx服务核心类：基于xx服务接口声明的服务核心类，需要继承[RetrofitServiceCore]，参考[核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
+ * 配置：网络请求的配置，域名、公参等等..，参考[配置](#配置)
  
 ## 例子
 ### 搜索音乐
