@@ -13,7 +13,7 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
 @HttpDsl
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     /**
-     * 第一种：在全局的配置下进行配置
+     * 基于全局配置进行配置
      */
     override fun generateDefaultConfig() = config {
         // host = "https://api.apiopen.top"
@@ -38,7 +38,7 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     }
 
     /**
-     * 第二种：全新的配置，和全局配置没有关系
+     * 全新的独立配置，和全局配置没有关系
      */
 //    override var defaultConfig: HttpConfig = newConfig {
 //        host = "https://api.apiopen.top"
