@@ -86,12 +86,12 @@ httpGlobalConfig {
 &emsp;&emsp;clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你明确需要取消请求的位置主动调用clearRequest()。
 
 ### 配置
-###### 配置有三种，[全局配置](#httpglobalconfig)、[基于XX配置进行配置](#config)、[全新的配置](#newconfig)
+###### 配置有三种：[全局配置](#httpglobalconfig)、[基于XX配置进行配置](#config)、[全新的配置](#newconfig)
 
 #### httpGlobalConfig
 全局配置，推荐在你的自定义application进行全局配置。  
   
-必配项（也只能在全局进行配置）：  
+必配项（只支持在全局配置中）：  
 [successfulCode](#successfulcode)、[responseClass](#responseclass)、[onResponseConvertFailedListener](#onresponseconvertfailedlistener)    
 
 ```kotlin
