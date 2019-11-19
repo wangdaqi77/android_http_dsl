@@ -40,16 +40,16 @@ MusicServiceCore
     }
 ```
 
-### 需要实现的类
+#### 需要实现的类
 
-#### 音乐服务接口
+##### 音乐服务接口
 ```kotlin
 interface MusicApi {
     @GET("/searchMusic")
     fun searchMusic(@Query("name")name:String):Observable<MyResponse<ArrayList<SearchMusic.Item>>>
 }
 ```
-#### 音乐服务核心类
+##### 音乐服务核心类
 ```kotlin
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     override fun generateDefaultConfig() = config {
@@ -58,14 +58,14 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     }
 }
 ```
-#### 音乐服务的拓展函数
+##### 音乐服务的拓展函数
 ```kotlin
 @RetrofitServiceDslMarker
 fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
 ```
-#### 全局配置
+##### 全局配置
 在自定义的Application进行配置
 ```kotlin
 httpGlobalConfig {
@@ -86,7 +86,7 @@ httpGlobalConfig {
 &emsp;&emsp;clearRequest()的调用时机在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来，你需要在你明确需要取消请求的位置主动调用clearRequest()。
 
 ### 配置
-###### 配置有三种：[全局配置](#httpglobalconfig)、[基于XX配置进行配置](#config)、[全新的配置](#newconfig)
+配置有三种：[全局配置](#httpglobalconfig)、[基于XX配置进行配置](#config)、[全新的配置](#newconfig)
 
 #### httpGlobalConfig
 全局配置，推荐在你的自定义application进行全局配置。  
@@ -158,7 +158,7 @@ musicService {
 #### successfulCode
 成功码，[onSuccess](#observe)的触发是基于这个成功码判定的。
 #### responseClass
-响应的结构体。
+响应的结构体。必须继承[CommonResponse](#/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
 #### connectTimeOut
 连接超时，单位ms。
 #### readTimeOut
@@ -226,3 +226,53 @@ httpGlobalConfig {
 添加公共的请求头。
 #### addUrlQueryParams
 添加公共的url请求公参。
+
+## 其他
+#### 定义响应体
+必须继承[CommonResponse](#/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
+  
+第一种情况：  
+```json
+{
+	"code": 200,
+	"message": "成功!",
+	"result": {}
+}
+```
+```kotlin
+class MyResponse<T> : CommonResponse<T> {
+    @SerializedName("code")
+    override var code: Int = -1
+    @SerializedName("message")
+    override var message: String? = null
+    @SerializedName("result")
+    override var data: T? = null
+}
+```
+第二种情况:  
+```json
+{
+	"meta": {
+		"code": 200,
+		"message": "成功!"
+	},
+	"data": {}
+}
+```
+```kotlin
+class MyResponse<T> : CommonResponse<T> {
+    @SerializedName("meta")
+    private var meta :Meta? = null
+    override var code: Int = meta?.code ?:-1
+    override var message: String? = meta?.message
+    @SerializedName("data")
+    override var data: T? = null
+   
+    class Meta{
+        @SerializedName("code")
+        var code = -1
+        @SerializedName("message")
+        var message: String? = null
+    }
+}
+```
