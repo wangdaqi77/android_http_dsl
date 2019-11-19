@@ -103,15 +103,15 @@ httpGlobalConfig {  }
 config{  }
 ```
 例如在上面的搜索音乐的例子中：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的。  
-&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的。  
+&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项)。  
+&emsp;&emsp;当[发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项)。
 
 #### 全新的独立配置
 ```kotlin
 newConfig{  }
 ```
 例如在上面搜索音乐的例子中改动一下：  
-&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置完全是**全新的独立配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
+&emsp;&emsp;当实现[MusicServiceCore音乐服务核心类](#音乐服务核心类)时重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置是**全新的独立配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
 ```kotlin
 override fun generateDefaultConfig() = newConfig {  }
 ```
@@ -166,7 +166,18 @@ api { searchMusic(name = name) }.thenCall {
 #### onResponseConvertFailedListener
 解析失败监听器，当框架层解析结构失败时触发。如果服务器返回数据遵循Gson的解析规则，那么这个监听始终不会被触发。
   
-例如：正常result为User类型时，实际返回{"code":200,"message":"成功!","result":""}那么此方法必定被执行，因为result为String被解析成User是不允许的。  
+例如：
+当请求搜索音乐api时，服务器返回了以下json
+```json
+{
+	"meta": {
+		"code": 200,
+		"message": "成功!"
+	},
+	"result": ""
+}
+```
+但是[音乐服务接口](#音乐服务接口)声明响应体MyResponse<T>的result类型为ArrayList<SearchMusic.Item>，当此次请求正常响应时，那么此方法必定被执行，因为result为String被解析成ArrayList<SearchMusic.Item>是不允许的。  
   
 返回值遵循以下约定：  
 &emsp;&emsp;当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#apiErrorInterceptorNode)中正确的处理该错误code；  
@@ -178,6 +189,7 @@ httpGlobalConfig {
         var result: ApiException? = null
         when (mediaType) {
             CONTENTTYPE_JSON -> {
+                // 这里示例的是将json转换成JSONObject再转换成MyResponse
                 val myResponse = response.transform(MyResponse::class.java) { target ->
                     target.code = optInt("code", -1)
                     target.message = optString("message", "")
@@ -245,7 +257,7 @@ class MyResponse<T> : CommonResponse<T> {
     override var data: T? = null
 }
 ```
-第二种情况:  
+第二种情况： 
 ```json
 {
 	"meta": {

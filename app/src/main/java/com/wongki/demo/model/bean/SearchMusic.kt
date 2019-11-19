@@ -8,6 +8,9 @@ package com.wongki.demo.model.bean
  */
 class SearchMusic {
 
+    data class Params(
+        val name: String
+    )
 
     data class Item(
         val author: String,
