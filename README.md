@@ -13,7 +13,7 @@
 该框架为了良好的阅读性进行了中度封装，是否适合请查看：
  
  * 如果服务的成功状态码存在多种，此框架是不合适的，因为仅限在全局配置中指定一个[成功状态码](#successfulcode)。
- * 如果服务的返回结构存在多种情况，此框架是不合适的，因为仅限在全局配置中指定一个[Response类](#responseclass)。
+ * 如果服务的返回结构存在多种情况，此框架是不合适的，因为仅限在全局配置中指定一个[responseClass](#responseclass)。
  * retrofit+okHttp的实例是根据配置生成的，这导致开发者在该框架不能使用Retrofit+OkHttp部分原本所支持的能力，例如OkHttp拦截器等等，但是框架提供了日常开发中常用的配置，也方便管理。
  * 使用前请务必查看[配置项](#配置项说明)是否满足你的开发需求！
  
@@ -309,3 +309,6 @@ FILE_NOT_FOUND_FAILED | -106 | 文件未找到
 FILE_WRITE_FAILED | -107 | 写入文件失败
 
 ###### 详情查看[HttpErrorCode](/http_lib/src/main/java/com/wongki/framework/http/HttpErrorCode.kt)
+
+#### 未来改进说明
+目前使用框架时上层依然会感知到retrofit的存在，因为需要定义retrofit的服务接口。未来的改进方向是深度封装，上层彻底感知不到底层使用到某个网络框架，这样的好处是底层在未来替换网络框架时上层并不需要改动代码。
