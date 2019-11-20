@@ -7,7 +7,7 @@ package com.wongki.framework.http.ssl
  * desc:
  */
 object SSLFactory {
-    val DEFAULT by lazy { DefaultSSL() }
+    fun getDefaultSSLConfig(): SSLConfig = SSLConfig
 }
 
 

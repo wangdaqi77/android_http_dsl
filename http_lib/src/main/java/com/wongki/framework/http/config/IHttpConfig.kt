@@ -4,6 +4,7 @@ import com.wongki.framework.http.HttpDsl
 import com.wongki.framework.http.interceptor.ApiErrorInterceptorNode
 import com.wongki.framework.http.listener.OnResponseFailedConvertListener
 import com.wongki.framework.http.log.ILog
+import com.wongki.framework.http.ssl.SSLConfig
 import com.wongki.framework.model.domain.CommonResponse
 
 /**
@@ -23,6 +24,8 @@ abstract class IHttpConfig {
     internal open var tag: String = "请设置tag"
     // 域名
     open var host: String? = null
+    // ssl
+    open var sslConfig: SSLConfig? = null
     // 与服务器协商的成功码  只能全局设置
     open var successfulCode: Int? = null
     // 响应的class 只能全局设置
@@ -55,6 +58,7 @@ abstract class IHttpConfig {
     open val commonBodyParams: MutableMap<String, String?>? = null
 
 
+
     companion object DEFAULT : IHttpConfig() {
         override var tag: String = "默认的配置"
         override var host: String? = null
@@ -70,5 +74,6 @@ abstract class IHttpConfig {
         override var commonHeader: MutableMap<String, String?>? = null
         override var commonUrlQueryParams: MutableMap<String, String?>? = null
         override var commonBodyParams: MutableMap<String, String?>? = null
+
     }
 }

@@ -178,6 +178,7 @@ api { searchMusic(name = name) }.thenCall {
 -------- | -------- | :--------: | :--------: | :--------: | :--------:
 [tag](#tag) | 标签 | ✔️ | ✔️ | ✔️ | 覆盖
 [host](#host) | 域名 | ✔️ | ✔️ | ✔️ | 覆盖
+[ssl](#ssl) | 配置证书 | ✔️ | ✔️ | ✔️ | 覆盖
 [successfulCode](#successfulcode) | 成功码 | ✔️ |  ❌| ❌ | -
 [responseClass](#responseclass) | 响应结构 | ✔️ |  ❌| ❌ | -
 [connectTimeOut](#connecttimeout) | 连接超时 | ✔️ | ✔️ | ✔️ | 覆盖
@@ -193,6 +194,8 @@ api { searchMusic(name = name) }.thenCall {
 标签，目前在框架内打印log时使用。
 ### host
 域名。
+### ssl
+配置证书相关。
 ### successfulCode
 成功码，仅支持全局的配置。[onSuccess](#observe)的触发是基于这个成功码判定的。
 ### responseClass

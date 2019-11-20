@@ -17,6 +17,7 @@ open class HttpConfig(builder: HttpConfigBuilder) : IHttpConfig() {
     init {
         this.tag = builder.tag
         this.host = builder.host
+        this.sslConfig = builder.sslConfig
         this.connectTimeOut = builder.connectTimeOut
         this.readTimeOut = builder.readTimeOut
         this.writeTimeOut = builder.writeTimeOut

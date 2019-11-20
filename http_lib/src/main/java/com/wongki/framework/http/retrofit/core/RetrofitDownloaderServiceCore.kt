@@ -348,7 +348,6 @@ abstract class RetrofitDownloaderServiceCore<API> : AbsRetrofitServiceCore<API>(
 
         addCommonHeaders(okHttpBuilder, config.commonHeader)
         addCommonUrlParams(okHttpBuilder, config.commonUrlQueryParams)
-
         okHttpBuilder.addInterceptor(
             HttpLoggingInterceptor(HttpLoggingInterceptor.Logger { message ->
                 config.logger?.log(message)

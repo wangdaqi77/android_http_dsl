@@ -3,6 +3,7 @@ package com.wongki.framework.http.config
 import com.wongki.framework.http.HttpDsl
 import com.wongki.framework.http.interceptor.ApiErrorInterceptorNode
 import com.wongki.framework.http.log.ILog
+import com.wongki.framework.http.ssl.SSLConfig
 
 /**
  * @author  wangqi
@@ -29,6 +30,8 @@ open class HttpConfigBuilder {
     var tag: String = ""
     // 域名
     var host: String? = null
+    // ssl
+    internal var sslConfig: SSLConfig? = null
     // 连接超时时间
     var connectTimeOut: Long? = null
     // 读取超时时间
@@ -43,6 +46,16 @@ open class HttpConfigBuilder {
     internal var addHeaderFunction: (() -> MutableMap<String, String?>)? = null
     // 添加url参数
     internal var addUrlQueryParamsFunction: (() -> MutableMap<String, String?>)? = null
+
+    /**
+     * ssl
+     */
+    fun ssl(init: SSLConfig.() -> Unit) {
+        val sslConfig = SSLConfig()
+        sslConfig.init()
+        this.sslConfig = sslConfig
+
+    }
 
     /**
      * log

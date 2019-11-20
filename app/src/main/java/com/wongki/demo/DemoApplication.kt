@@ -6,6 +6,7 @@ import com.wongki.framework.base.BaseApplication
 import com.wongki.framework.http.CONTENTTYPE_JSON
 import com.wongki.framework.http.exception.ApiException
 import com.wongki.framework.http.httpGlobal
+import com.wongki.framework.http.ssl.SSLFactory
 import com.wongki.framework.utils.transform
 
 /**
@@ -42,6 +43,11 @@ class DemoApplication : BaseApplication() {
                 readTimeOut = 10_000
                 // 写入超时时间
                 writeTimeOut = 10_000
+
+                ssl {
+                    ssLSocketFactory = SSLFactory.getDefaultSSLConfig().ssLSocketFactory
+                    hostnameVerifier = SSLFactory.getDefaultSSLConfig().hostnameVerifier
+                }
 
                 // log
                 log { message ->

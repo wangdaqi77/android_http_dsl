@@ -11,8 +11,6 @@ import com.wongki.framework.http.interceptor.ApiErrorInterceptorNode
 import com.wongki.framework.http.retrofit.IRetrofitRequester
 import com.wongki.framework.http.retrofit.converter.GsonConverterFactory
 import com.wongki.framework.http.retrofit.lifecycle.IHttpDestroyedObserver
-import com.wongki.framework.http.ssl.ISSL
-import com.wongki.framework.http.ssl.SSLFactory
 import com.wongki.framework.utils.RxSchedulers
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
@@ -35,7 +33,7 @@ import java.util.concurrent.TimeUnit
 
 
 @HttpDsl
-abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(), ISSL {
+abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>() {
 
     /**
      * 请求服务器的api接口定义，请继续调用[thenCall]发起网络请求
@@ -304,13 +302,6 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
         }
     }
 
-    /*****SSL相关******/
-    override fun getSSLSocketFactory() = SSLFactory.DEFAULT.getSSLSocketFactory()
-
-    /*****SSL相关******/
-    override fun getHostnameVerifier() = SSLFactory.DEFAULT.getHostnameVerifier()
-
-
     /**
      * 生成retrofit
      */
@@ -342,12 +333,12 @@ abstract class RetrofitServiceCore<SERVICE> : AbsRetrofitServiceCore<SERVICE>(),
             }).setLevel(HttpLoggingInterceptor.Level.BODY)
         )
 
-        // https手机无须安装代理软件的证书就可以明文查看数据
         if (BuildConfig.DEBUG) {
-            getSSLSocketFactory()?.let {
+            val sslConfig = config.sslConfig
+            sslConfig?.ssLSocketFactory?.let {
                 okHttpBuilder.sslSocketFactory(it)
             }
-            getHostnameVerifier()?.let {
+            sslConfig?.hostnameVerifier?.let {
                 okHttpBuilder.hostnameVerifier(it)
             }
         }
