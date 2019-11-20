@@ -270,7 +270,7 @@ httpGlobal {
     }
 }
 ```
-###### 因允许可以基于原有的配置进行配置，例如全局的配置设置了该配置项，服务的配置项是基于全局的配置也设置了该配置项，那么服务的该配置项的优先级高于全局的配置的优先级，也就是说会先分发到服务的配置的api错误拦截器，如果服务的api错误拦截器不处理该错误时，会继续分发到全局的api错误拦截器。
+因允许可以基于原有的配置进行配置，例如全局的配置设置了该配置项，服务的配置项是基于全局的配置也设置了该配置项，那么服务的该配置项的优先级高于全局的配置的优先级，也就是说会先分发到服务的配置的api错误拦截器，如果服务的api错误拦截器不处理该错误时，会继续分发到全局的api错误拦截器。
 
 ### addHeaders
 添加公共的请求头。
@@ -326,7 +326,7 @@ class MyResponse<T> : CommonResponse<T> {
     }
 }
 ```
-#### 内部错误码说明
+### 内部错误码说明
 常量 | 值 | 含义
 ------ | :------: | ------
 UNKNOWN_FAILED | -100 | 未知失败
@@ -338,7 +338,7 @@ REQUEST_FAILED | -105 | 请求失败
 FILE_NOT_FOUND_FAILED | -106 | 文件未找到
 FILE_WRITE_FAILED | -107 | 写入文件失败
 
-###### 详情查看[HttpErrorCode](/http_lib/src/main/java/com/wongki/framework/http/HttpErrorCode.kt)
+详情查看[HttpErrorCode](/http_lib/src/main/java/com/wongki/framework/http/HttpErrorCode.kt)
 
-#### 未来改进说明
+### 未来改进说明
 目前使用框架时上层依然会感知到retrofit的存在，因为需要定义retrofit的服务接口。未来的改进方向是深度封装，上层彻底感知不到底层使用到某个网络框架，这样的好处是底层在未来替换网络框架时上层并不需要改动代码。
