@@ -1,5 +1,5 @@
 # android_http_dsl
-###### 基于okHttp+retrofit+rxJava+kotlin开发的网络框架
+###### 基于okHttp+retrofit+rxJava+kotlin开发封装的网络框架
 ## 优点
 
  * 良好的阅读性
