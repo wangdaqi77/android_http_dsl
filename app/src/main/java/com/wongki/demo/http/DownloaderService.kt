@@ -11,7 +11,7 @@ import com.wongki.framework.http.retrofit.core.RetrofitDownloaderServiceCore
  * desc:    .
  */
 class DownloaderService : RetrofitDownloaderServiceCore<DownloadApi>() {
-    override fun generateDefaultConfig() = config {
+    override fun generateConfig() = config {
         host = "https://api.apiopen.top"
     }
 }

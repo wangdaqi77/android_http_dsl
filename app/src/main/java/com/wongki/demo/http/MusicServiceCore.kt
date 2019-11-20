@@ -15,7 +15,7 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
     /**
      * 基于全局配置进行配置
      */
-    override fun generateDefaultConfig() = config {
+    override fun generateConfig() = config {
         // host = "https://api.apiopen.top"
         tag = "MusicServiceCore"
         addApiErrorInterceptor2FirstNode{code,message->

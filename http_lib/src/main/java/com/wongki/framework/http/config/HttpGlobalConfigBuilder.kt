@@ -22,11 +22,8 @@ class HttpGlobalConfigBuilder : HttpConfigBuilder {
         this.responseClass = config.responseClass
         this.onResponseConvertFailedListener = config.onResponseConvertFailedListener
     }
-    @HttpDsl
     var successfulCode: Int? = null
-    @HttpDsl
     var responseClass: Class<out CommonResponse<*>>? = null
-    @HttpDsl
     internal var onResponseConvertFailedListener: OnResponseFailedConvertListener? = null
 
     /**
@@ -58,7 +55,6 @@ class HttpGlobalConfigBuilder : HttpConfigBuilder {
      * }
      *
      */
-    @HttpDsl
     fun onResponseConvertFailed(convert: (String, String) -> ApiException?) {
         onResponseConvertFailedListener =
             object : OnResponseFailedConvertListener {

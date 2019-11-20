@@ -11,7 +11,7 @@ import com.wongki.framework.http.retrofit.core.RetrofitServiceCore
  * desc:    .
  */
 object OtherServiceCore : RetrofitServiceCore<OtherApi>() {
-    override fun generateDefaultConfig() = config {
+    override fun generateConfig() = config {
 
     }
 

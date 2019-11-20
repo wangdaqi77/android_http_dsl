@@ -12,16 +12,16 @@
 ## 使用前必读
 该框架为了良好的阅读性进行了中度封装，是否适合请查看：
  
- * 如果服务的成功状态码存在多种，此框架是不合适的，因为仅限在全局配置中指定一个[成功状态码](#successfulcode)。
- * 如果服务的返回结构存在多种情况，此框架是不合适的，因为仅限在全局配置中指定一个[responseClass](#responseclass)。
- * retrofit+okHttp的实例是根据配置生成的，这导致开发者在该框架不能使用Retrofit+OkHttp部分原本所支持的能力，例如OkHttp拦截器等等，但是框架提供了日常开发中常用的配置，也方便管理。
+ * 如果服务的成功状态码存在多种，此框架是不合适的，因为仅限在全局的配置中指定一个[成功状态码](#successfulcode)。
+ * 如果服务的返回结构存在多种情况，此框架是不合适的，因为仅限在全局的配置中指定一个[responseClass](#responseclass)。
+ * Retrofit+OkHttp的实例是根据配置生成的，这导致开发者在该框架不能使用Retrofit+OkHttp部分原本所支持的能力，例如OkHttp拦截器等等，但是框架提供了日常开发中常用的配置，也方便管理。
  * 使用前请务必查看[配置项](#配置项说明)是否满足你的开发需求！
  
 ## 名称概念说明
 
- * xx服务接口：kotlin接口中定义的HTTP API，参考[Retrofit-API Declaration](https://square.github.io/retrofit/#api-declaration)
- * xx服务核心类： 一个xx服务接口对应一个xx服务核心类，需要继承[RetrofitServiceCore](/http_lib/src/main/java/com/wongki/framework/http/retrofit/core/RetrofitServiceCore.kt)，参考[服务核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
- * 配置：网络请求的配置，域名、公参等等，参考[配置](#配置)
+ * XX服务接口：在此服务接口中定义Http API，参考[Retrofit-API Declaration](https://square.github.io/retrofit/#api-declaration)
+ * XX服务核心类： 一个XX服务接口对应一个XX服务核心类，该类需要继承[RetrofitServiceCore](/http_lib/src/main/java/com/wongki/framework/http/retrofit/core/RetrofitServiceCore.kt)，参考例子[MusicServiceCore](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
+ * 配置：发起网络请求时用于构建请求器的配置，域名、公参等等，参考[配置](#配置)
 
 ## 例子
 ### 搜索音乐
@@ -63,9 +63,9 @@ interface MusicApi {
  * 音乐服务核心类
 ```kotlin
 object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
-    override fun generateDefaultConfig() = config {
+    override fun generateConfig() = config {
         // ...
-        host = "https://xx.com"
+        host = "https://XX.com"
     }
 }
 ```
@@ -76,16 +76,18 @@ fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
 ```
- * 进行全局配置
+ * 进行全局的配置
 ```kotlin
 // 在自定义的Application进行配置
-httpGlobalConfig {
-    tag = "http全局配置"
-    responseClass = MyResponse::class.java
-    successfulCode = 200
-    onResponseConvertFailed { response, mediaType ->
-        // ...
-        return@onResponseConvertFailed result
+httpGlobal {
+    newConfig {
+        tag = "http全局的配置"
+        responseClass = MyResponse::class.java
+        successfulCode = 200
+        onResponseConvertFailed { response, mediaType ->
+            // ...
+            return@onResponseConvertFailed result
+        }
     }
 }
 ```
@@ -97,37 +99,71 @@ kotlin接口中定义的HTTP API，例如[音乐服务接口](#需要实现的�
 ### lifecycleObserver
 网络请求的生命周期观察器。设置该参数意味着一次网络请求和该观察器存在绑定关系，作用是避免内存泄漏。  
 lifecycleObserver的值需要实现[IHttpDestroyedObserver](/http_lib/src/main/java/com/wongki/framework/http/retrofit/lifecycle/IHttpDestroyedObserver.kt)接口，该接口里有clearRequest()的默认实现函数，该函数会将所有绑定到自己的请求器进行取消请求处理。你需要在你明确需要取消请求的位置主动调用clearRequest()，一般需求下是在Activity.onDestroy()、Fragment.onDestroyView()、ViewModel.onCleared()或者根据你的实际场景来判定。
+### config
+网络请求配置。你在担心[在哪里配置？](#在哪里配置？)，该[如何配置？](#如何配置？)
+### observe
+网络请求观察器。
+ * onStart：当开始请求服务器时。
+ * onCancel：当该请求被取消时。
+ * onSuccess：当请求成功时。
+ * onFailed：当失败时。
 ### 配置
-配置有三种：[全局配置](#全局配置)、[基于xx配置进行配置](#基于xx配置进行配置)、[全新的独立配置](#全新的独立配置)
-
-#### 全局配置
+在每次发起网络请求时根据配置构建请求器。
+### 在哪里配置？
+可以在三个位置进行配置，按层级大小排序：
+ * [全局的配置](#全局的配置)
+ * [XX服务核心的配置](#XX服务核心的配置)
+ * [单次api请求时的配置](#单次api请求时的配置)
+注意：如果按照优先级的排序，跟层级大小的顺序恰好相反，这里所说的优先级是使用了[基于XX配置进行配置](#如何配置？)来说的。
+#### 全局的配置
+推荐在你的Application进行配置。
 ```kotlin
-// 推荐在你的自定义application进行全局配置。  
-httpGlobalConfig {  }
+httpGlobal { 
+    newConfig { /*...*/ }
+ }
 ```
-  
-必配项(只支持全局配置)：  
-[successfulCode](#successfulcode)、[responseClass](#responseclass)、[onResponseConvertFailedListener](#onresponseconvertfailedlistener)    
+必配项：[successfulCode](#successfulcode)、[responseClass](#responseclass)、[onResponseConvertFailedListener](#onresponseconvertfailedlistener)    
 
-
-#### 基于xx配置进行配置
+#### XX服务核心的配置
+当实现XX服务核心类，在重写generateDefaultConfig函数时进行配置。
 ```kotlin
-config{  }
+object XXServiceCore : RetrofitServiceCore<XXSERVICE>() {
+    override fun generateConfig() = config { /*...*/ }
+}
+```
+#### 单次api请求时的配置
+当发起api请求时，在thenCall代码块里进行配置。
+```kotlin
+XXService {
+    api { /*...*/ }.thenCall {
+        config { /*...*/ }
+    }
+}
+```
+### 如何配置？
+分为两类：
+ * [基于XX配置进行配置](#基于XX配置进行配置)
+ * [全新的独立配置](#全新的独立配置)
+#### 基于XX配置进行配置
+XX服务核心类的配置可以基于全局的配置进行配置，单次api请求时的配置可以基于其对应的XX服务核心类进行配置。  
+```kotlin
+config {  }
 ```
 例如在上面的搜索音乐的例子中：  
- * [音乐服务核心类](#需要实现的类和配置)重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项说明)。  
- * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项说明)。
+ * [音乐服务核心类](#需要实现的类和配置)重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的配置是**基于全局的配置进行配置**的，需要关注[基于XX配置进行配置的影响](#配置项说明)。  
+ * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示单次api请求时的配置是**基于其对应的XX服务核心类的配置进行配置**的，需要关注[基于XX配置进行配置的影响](#配置项说明)。
 
 #### 全新的独立配置
+新创建的配置，和其他配置没有关系。
 ```kotlin
-newConfig{  }
+newConfig {  }
 ```
 例如在上面搜索音乐的例子中改动一下：  
- * [音乐服务核心类](#需要实现的类和配置)重写了generateDefaultConfig()函数，将该函数的返回值替换为为newConfig代码块，这表示该服务核心类的默认配置是**全新的独立配置**，它所能配置的配置项与[全局配置](#全局配置)没有关系。  
+ * [音乐服务核心类](#需要实现的类和配置)重写generateDefaultConfig()函数，将该函数的返回值替换为newConfig代码块，这表示该服务核心类的配置是**全新的独立配置**，该配置与全局的配置没有关系。  
 ```kotlin
-override fun generateDefaultConfig() = newConfig {  }
+override fun generateConfig() = newConfig {  }
 ```
- * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了[config](#基于xx配置进行配置)代码块替换为newConfig代码块，表示发起api请求时的配置是**全新的独立配置**，它所能配置的配置项与其所属的服务核心类的默认配置没有关系。  
+ * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中声明了config代码块替换为newConfig代码块，表示单次api请求时的配置是**全新的独立配置**，该配置与其对应的XX服务核心类的配置没有关系。  
 ```kotlin
 // ..
 api { searchMusic(name = name) }.thenCall {
@@ -135,19 +171,12 @@ api { searchMusic(name = name) }.thenCall {
     newConfig {  } 
 }
 ```
-### observe
-网络请求观察器。
- * onStart：当开始请求服务器时。
- * onCancel：当该请求被取消时。
- * onSuccess：当请求成功时。
- * onFailed：当失败时。
-
 ## 配置项说明
 
-名称 | 含义 | 支持全局配置 | 支持服务核心配置 | 支持api请求配置 | [config代码块](#基于xx配置进行配置)
+名称 | 含义 | 支持全局的配置 | 支持服务核心配置 | 支持api请求配置 | [基于XX配置进行配置](#如何配置？)的影响
 -------- | -------- | :--------: | :--------: | :--------: | :--------:
 [tag](#tag) | 标签 | ✔️ | ✔️ | ✔️ | 覆盖
-[host](#host) | 域名 | ✔️ | ✔️ | ✔️ |覆盖
+[host](#host) | 域名 | ✔️ | ✔️ | ✔️ | 覆盖
 [successfulCode](#successfulcode) | 成功码 | ✔️ |  ❌| ❌ | -
 [responseClass](#responseclass) | 响应结构 | ✔️ |  ❌| ❌ | -
 [connectTimeOut](#connecttimeout) | 连接超时 | ✔️ | ✔️ | ✔️ | 覆盖
@@ -156,17 +185,17 @@ api { searchMusic(name = name) }.thenCall {
 [logger](#logger) | log | ✔️ | ✔️ | ✔️ | 覆盖
 [onResponseConvertFailedListener](#onresponseconvertfailedlistener) | 框架解析失败 | ✔️ | ❌| ❌ | -
 [addApiErrorInterceptor2FirstNode](#addapierrorinterceptor2firstnode) | 失败拦截器 | ✔️ | ✔️ | ✔️ | 链表插入头
-[addHeaders](#addheaders) | 请求头公参 | ✔️ | ✔️ | ✔️ | 追加
-[addUrlQueryParams](#addurlqueryparams) | url公参 | ✔️ | ✔️ | ✔️ | 追加
+[addHeaders](#addheaders) | 请求头公参 | ✔️ | ✔️ | ✔️ | 追加，key相同时覆盖
+[addUrlQueryParams](#addurlqueryparams) | url公参 | ✔️ | ✔️ | ✔️ | 追加，key相同时覆盖
 
 ### tag
 标签，目前在框架内打印log时使用。
 ### host
 域名。
 ### successfulCode
-成功码，仅支持全局配置。[onSuccess](#observe)的触发是基于这个成功码判定的。
+成功码，仅支持全局的配置。[onSuccess](#observe)的触发是基于这个成功码判定的。
 ### responseClass
-响应的结构体，仅支持全局配置。必须实现[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)接口，参考[如何定义Response？](#如何定义Response？)
+响应的结构体，仅支持全局的配置。必须实现[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)接口，参考[如何定义Response？](#如何定义Response？)
 ### connectTimeOut
 连接超时，单位ms。
 ### readTimeOut
@@ -176,7 +205,7 @@ api { searchMusic(name = name) }.thenCall {
 ### logger
 打印日志。
 ### onResponseConvertFailedListener
-解析失败监听器，当框架层解析结构失败时触发，仅支持全局配置。如果服务器返回数据遵循Gson的解析规则，那么这个监听始终不会被触发。
+解析失败监听器，当框架层解析结构失败时触发，仅支持全局的配置。如果服务器返回数据遵循Gson的解析规则，那么这个监听始终不会被触发。
   
 例如：
 当请求搜索音乐api时，服务器返回了以下json
@@ -195,7 +224,7 @@ api { searchMusic(name = name) }.thenCall {
  * 当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#addapierrorinterceptor2firstnode)中正确的处理该错误code；  
  * 当你无法理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[PARSE_FAILED](#内部错误码说明)  
 ```kotlin
-httpGlobalConfig {
+httpGlobal {
     // ...
     onResponseConvertFailed { response, mediaType ->
         var result: ApiException? = null
@@ -225,7 +254,7 @@ api错误拦截器，当请求失败时触发。
   
 例如：登录失效的错误码为1001，常规的处理是跳转到登录页。  
 ```kotlin
-httpGlobalConfig {
+httpGlobal {
     // ...
     addApiErrorInterceptor2FirstNode { code, message ->
         when (code) {
@@ -240,7 +269,7 @@ httpGlobalConfig {
     }
 }
 ```
-###### 因允许可以基于原有的配置进行配置，例如全局配置设置了该配置项，服务的配置项是基于全局的配置也设置了该配置项，那么服务的该配置项的优先级高于全局配置的优先级，也就是说会先分发到服务的配置的api错误拦截器，如果服务的api错误拦截器不处理该错误时，会继续分发到全局的api错误拦截器。
+###### 因允许可以基于原有的配置进行配置，例如全局的配置设置了该配置项，服务的配置项是基于全局的配置也设置了该配置项，那么服务的该配置项的优先级高于全局的配置的优先级，也就是说会先分发到服务的配置的api错误拦截器，如果服务的api错误拦截器不处理该错误时，会继续分发到全局的api错误拦截器。
 
 ### addHeaders
 添加公共的请求头。
