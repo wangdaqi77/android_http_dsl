@@ -107,7 +107,7 @@ lifecycleObserver的值需要实现[IHttpDestroyedObserver](/http_lib/src/main/j
  * onCancel：当该请求被取消时。
  * onSuccess：当请求成功时。
  * onFailed：当失败时。
-### 配置
+## 配置
 在每次发起网络请求时根据配置构建请求器。
 ### 在哪里配置？
 可以在三个位置进行配置，按层级大小排序：
