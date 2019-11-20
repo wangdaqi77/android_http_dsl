@@ -221,7 +221,7 @@ api { searchMusic(name = name) }.thenCall {
 但是[音乐服务接口](#需要实现的类和配置)声明响应体MyResponse<T>的result类型为ArrayList<SearchMusic.Item>，当此次请求正常响应时，那么此方法必定被执行，因为result为String被解析成ArrayList<SearchMusic.Item>是不允许的。  
   
 返回值遵循以下约定：  
- * 当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#addapierrorinterceptor2firstnode)中正确的处理该错误code；  
+ * 当你能理解这个错误时需要返回[ApiException](/http_lib/src/main/java/com/wongki/framework/http/exception/ApiException.kt)，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#addapierrorinterceptor2firstnode)中正确的处理该错误code；  
  * 当你无法理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[PARSE_FAILED](#内部错误码说明)  
 ```kotlin
 httpGlobal {
