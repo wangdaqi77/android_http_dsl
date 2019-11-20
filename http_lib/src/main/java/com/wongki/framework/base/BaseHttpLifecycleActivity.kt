@@ -10,8 +10,8 @@ import com.wongki.framework.http.retrofit.lifecycle.IHttpDestroyedObserver
  * desc:    .
  */
 open class BaseHttpLifecycleActivity:BaseActivity(), IHttpDestroyedObserver {
-    override fun onDestroy() {
-        super<IHttpDestroyedObserver>.onDestroy()
+    override fun clearRequest() {
+        super<IHttpDestroyedObserver>.clearRequest()
         super<BaseActivity>.onDestroy()
     }
 }
