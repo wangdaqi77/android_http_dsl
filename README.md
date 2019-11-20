@@ -125,7 +125,7 @@ httpGlobal {
 必配项：[successfulCode](#successfulcode)、[responseClass](#responseclass)、[onResponseConvertFailedListener](#onresponseconvertfailedlistener)    
 
 #### XX服务核心的配置
-当实现XX服务核心类，在重写generateDefaultConfig函数时进行配置。
+当实现XX服务核心类，在重写generateConfig函数时进行配置。
 ```kotlin
 object XXServiceCore : RetrofitServiceCore<XXSERVICE>() {
     override fun generateConfig() = config { /*...*/ }
@@ -150,7 +150,7 @@ XX服务核心类的配置可以基于全局的配置进行配置，单次api请
 config {  }
 ```
 例如在上面的搜索音乐的例子中：  
- * [音乐服务核心类](#需要实现的类和配置)重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的配置是**基于全局的配置进行配置**的，需要关注[基于XX配置进行配置的影响](#配置项说明)。  
+ * [音乐服务核心类](#需要实现的类和配置)重写了generateConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的配置是**基于全局的配置进行配置**的，需要关注[基于XX配置进行配置的影响](#配置项说明)。  
  * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示单次api请求时的配置是**基于其对应的XX服务核心类的配置进行配置**的，需要关注[基于XX配置进行配置的影响](#配置项说明)。
 
 #### 全新的独立配置
@@ -159,7 +159,7 @@ config {  }
 newConfig {  }
 ```
 例如在上面搜索音乐的例子中改动一下：  
- * [音乐服务核心类](#需要实现的类和配置)重写generateDefaultConfig()函数，将该函数的返回值替换为newConfig代码块，这表示该服务核心类的配置是**全新的独立配置**，该配置与全局的配置没有关系。  
+ * [音乐服务核心类](#需要实现的类和配置)重写generateConfig()函数，将该函数的返回值替换为newConfig代码块，这表示该服务核心类的配置是**全新的独立配置**，该配置与全局的配置没有关系。  
 ```kotlin
 override fun generateConfig() = newConfig {  }
 ```
