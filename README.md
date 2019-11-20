@@ -1,5 +1,5 @@
 # android_http_dsl
-###### 基于okHttp+retrofit+rxJava+kotlin开发封装的网络框架
+基于OkHttp+Retrofit+RxJava+Kotlin开发封装的网络框架
 ## 优点
 
  * 良好的阅读性
@@ -113,7 +113,8 @@ lifecycleObserver的值需要实现[IHttpDestroyedObserver](/http_lib/src/main/j
 可以在三个位置进行配置，按层级大小排序：
  * [全局的配置](#全局的配置)
  * [XX服务核心的配置](#XX服务核心的配置)
- * [单次api请求时的配置](#单次api请求时的配置)  
+ * [单次api请求时的配置](#单次api请求时的配置)
+  
 注意：如果按照优先级的排序，跟层级大小的顺序恰好相反，这里所说的优先级是使用了[基于XX配置进行配置](#如何配置？)来说的。
 #### 全局的配置
 推荐在你的Application进行配置。
