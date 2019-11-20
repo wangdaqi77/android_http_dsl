@@ -1,18 +1,28 @@
 # android_http_dsl
 ###### 基于okHttp+retrofit+rxJava+kotlin开发的网络框架
-## 优势
+## 优点
 
  * 良好的阅读性
  * 发起api请求时无需声明响应的具体类型
  * 生命周期管理，界面销毁即取消网络请求
  * 优雅的配置
  * 错误拦截处理机制
+ 
+ 
+## 使用前必读
+该框架为了良好的阅读性进行了中度封装，是否适合请查看：
+ 
+ * 如果服务的成功状态码存在多种，此框架是不合适的，因为仅限在全局配置中指定一个[成功状态码](#successfulcode)。
+ * 如果服务的返回结构存在多种情况，此框架是不合适的，因为仅限在全局配置中指定一个[Response类](#responseclass)。
+ * retrofit+okHttp的实例是根据配置生成的，这导致开发者在该框架不能使用Retrofit+OkHttp部分原本所支持的能力，例如OkHttp拦截器等等，但是框架提供了日常开发中常用的配置，也方便管理。
+ * 使用前请务必查看[配置项](#三、配置项说明)是否满足你的开发需求！
+ 
 ## 名称概念说明
 
  * xx服务接口：kotlin接口中定义的HTTP API，参考[Retrofit-API Declaration](https://square.github.io/retrofit/#api-declaration)
- * xx服务核心类：基于xx服务接口声明的服务核心类，需要继承[RetrofitServiceCore]，参考[核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
- * 配置：网络请求的配置，域名、公参等等..，参考[配置](#配置)
- 
+ * xx服务核心类： 一个xx服务接口对应一个xx服务核心类，需要继承[RetrofitServiceCore](/http_lib/src/main/java/com/wongki/framework/http/retrofit/core/RetrofitServiceCore.kt)，参考[服务核心类例子](/app/src/main/java/com/wongki/demo/http/MusicServiceCore.kt)
+ * 配置：网络请求的配置，域名、公参等等，参考[配置](#配置)
+
 ## 一、例子
 ### 搜索音乐
 #### 发起搜索音乐请求api
@@ -105,8 +115,8 @@ httpGlobalConfig {  }
 config{  }
 ```
 例如在上面的搜索音乐的例子中：  
- * [音乐服务核心类](#需要实现的类和配置)重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项说明)。  
- * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的，需要关注配置项的[覆盖，追加值等](#配置项说明)。
+ * [音乐服务核心类](#需要实现的类和配置)重写了generateDefaultConfig()函数，该函数的返回值使用了config代码块，这表示该服务核心类的默认配置是**基于[全局配置](#全局配置)进行配置**的，需要关注配置项的[覆盖，追加值等](#三、配置项说明)。  
+ * [发起搜索音乐请求api](#发起搜索音乐请求api)时，thenCall代码块中使用了config代码块，表示发起api请求时的配置是**基于其所属的服务核心类的默认配置进行配置**的，需要关注配置项的[覆盖，追加值等](#三、配置项说明)。
 
 #### 全新的独立配置
 ```kotlin
@@ -145,7 +155,7 @@ api { searchMusic(name = name) }.thenCall {
 [writeTimeOut](#writetimeout) | 写入超时 | ✔️ | ✔️ | ✔️ | 覆盖
 [logger](#logger) | log | ✔️ | ✔️ | ✔️ | 覆盖
 [onResponseConvertFailedListener](#onresponseconvertfailedlistener) | 框架解析失败 | ✔️ | ❌| ❌ | -
-[apiErrorInterceptorNode](#apierrorinterceptornode) | 失败拦截器 | ✔️ | ✔️ | ✔️ | 链表插入头
+[addApiErrorInterceptor2FirstNode](#addapierrorinterceptor2firstnode) | 失败拦截器 | ✔️ | ✔️ | ✔️ | 链表插入头
 [addHeaders](#addheaders) | 请求头公参 | ✔️ | ✔️ | ✔️ | 追加
 [addUrlQueryParams](#addurlqueryparams) | url公参 | ✔️ | ✔️ | ✔️ | 追加
 
@@ -154,9 +164,9 @@ api { searchMusic(name = name) }.thenCall {
 ### host
 域名。
 ### successfulCode
-成功码，[onSuccess](#observe)的触发是基于这个成功码判定的。
+成功码，仅支持全局配置。[onSuccess](#observe)的触发是基于这个成功码判定的。
 ### responseClass
-响应的结构体。必须实现[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)接口
+响应的结构体，仅支持全局配置。必须实现[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)接口，参考[如何定义Response？](#如何定义Response？)
 ### connectTimeOut
 连接超时，单位ms。
 ### readTimeOut
@@ -166,7 +176,7 @@ api { searchMusic(name = name) }.thenCall {
 ### logger
 打印日志。
 ### onResponseConvertFailedListener
-解析失败监听器，当框架层解析结构失败时触发。如果服务器返回数据遵循Gson的解析规则，那么这个监听始终不会被触发。
+解析失败监听器，当框架层解析结构失败时触发，仅支持全局配置。如果服务器返回数据遵循Gson的解析规则，那么这个监听始终不会被触发。
   
 例如：
 当请求搜索音乐api时，服务器返回了以下json
@@ -182,7 +192,7 @@ api { searchMusic(name = name) }.thenCall {
 但是[音乐服务接口](#需要实现的类和配置)声明响应体MyResponse<T>的result类型为ArrayList<SearchMusic.Item>，当此次请求正常响应时，那么此方法必定被执行，因为result为String被解析成ArrayList<SearchMusic.Item>是不允许的。  
   
 返回值遵循以下约定：  
- * 当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#apierrorinterceptornode)中正确的处理该错误code；  
+ * 当你能理解这个错误时需要返回[ApiException]，能不能理解的判定在于你是否可以在[onFailed](#observe)或者[错误拦截器](#addapierrorinterceptor2firstnode)中正确的处理该错误code；  
  * 当你无法理解这个错误时返回null，当返回null时，你会在[onFailed](#observe)中接收到code:[PARSE_FAILED](#内部错误码说明)  
 ```kotlin
 httpGlobalConfig {
@@ -206,7 +216,7 @@ httpGlobalConfig {
     }
 }
 ```
-### apiErrorInterceptorNode
+### addApiErrorInterceptor2FirstNode
 api错误拦截器，当请求失败时触发。
   
 返回值遵循以下约定：  
@@ -238,7 +248,7 @@ httpGlobalConfig {
 添加公共的url请求公参。
 
 ## 四、其他
-### 定义响应体
+### 如何定义Response？
 必须继承[CommonResponse](/http_lib/src/main/java/com/wongki/framework/model/domain/CommonResponse.kt)
   
 第一种情况：  
