@@ -71,7 +71,7 @@ object MusicServiceCore : RetrofitServiceCore<MusicApi>() {
 ```
  * 音乐服务的拓展函数
 ```kotlin
-@RetrofitServiceDslMarker
+@HttpDsl
 fun musicService(action:MusicServiceCore.()->Unit){
     MusicServiceCore.action()
 }
